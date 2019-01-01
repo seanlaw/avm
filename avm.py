@@ -5,21 +5,51 @@ import numpy as np
 
 class GAME(object):
     def __init__(self, n=5, m=5):
-        self._m = 5
-        self._n = 5
-        self._board = np.zeros((n, m+1), dtype=bool)
-        self._block_exit_column()
+        self._m = m
+        self._n = n
+        self._board = None
+        self._new_board = True
 
     @property
     def m(self):
         return self._m
+
+    @m.setter
+    def m(self, value):
+        self._new_board = True
+        self._m = value
     
     @property
     def n(self):
         return self._n
 
+    @n.setter
+    def n(self, value):
+        self._new_board = True
+        self._n = value
+
+    @property
+    def new_board(self):
+        return self._new_board
+
+    @new_board.setter
+    def new_board(self, value):
+        """
+        Set boolean flag for whether or not
+        a new board should be created when
+        accessing the self.board attribute
+        """
+        self._new_board = value
+
     @property
     def board(self):
+        if self.new_board:
+            # Add an extra column to account
+            # for the exit space
+            self._board = np.zeros((self.n, self.m+1), dtype=bool)
+            self._block_exit_column()
+            self.new_board = False
+            
         return self._board
 
     @board.setter
@@ -27,13 +57,20 @@ class GAME(object):
         try:
             val, indices = value
         except:
-            self._board = value
+            if value is None:
+                self._board = None
+            else:
+                self._board.fill(value)
         else: 
             self._board[indices] = val
 
-    def _block_exit_column(self):
+    def _block_exit_column(self, value=True):
         indices = np.s_[1:self.n, self.m]
-        self.board = (True, indices)
+        self.board = (value, indices)
+
+    def reset_board(self):
+        self.board = False
+        self._block_exit_column()
 
     def _piece_fits(self, piece):
         """
@@ -149,4 +186,12 @@ if __name__ == '__main__':
     #orange = ORANGE(0,0)
     #print(orange.shape)
     game = GAME()
+    print(game.board)
+    game.board = True
+    print(game.board)
+    game.reset_board()
+    print(game.board)
+    game.m = 2
+    print(game.board)
+    game.n = 2
     print(game.board)
