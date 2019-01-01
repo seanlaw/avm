@@ -46,7 +46,7 @@ class GAME(object):
         if self.new_board:
             # Add an extra column to account
             # for the exit space
-            self._board = np.zeros((self.n, self.m+1), dtype=bool)
+            self._board = np.zeros((self.n, self.m+1), dtype='u1')
             self._block_exit_column()
             self.new_board = False
             
@@ -60,11 +60,11 @@ class GAME(object):
             if value is None:
                 self._board = None
             else:
-                self._board.fill(value)
+                self._board.fill(int(value))
         else: 
-            self._board[indices] = val
+            self._board[indices] = int(val)
 
-    def _block_exit_column(self, value=True):
+    def _block_exit_column(self, value=1):
         indices = np.s_[1:self.n, self.m]
         self.board = (value, indices)
 
