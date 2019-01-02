@@ -14,7 +14,7 @@ class PIECE(object):
         return self._ref_idx
 
     @ref_idx.setter
-    def ref_idxx(self, value):
+    def ref_idx(self, value):
         self._ref_idx = value
 
     @property
