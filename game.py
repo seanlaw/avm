@@ -119,8 +119,8 @@ class GAME(object):
         if self.new_board_flag:
             self.new_board_flag = False
             # Add an extra column to account for the exit space region
-            self._board = np.zeros((self.n, self.m+1), dtype='u1')
-            self._block_exit_column('board', self.exit_col_idx)
+            self._board = np.zeros((self.n+1, self.m+1), dtype='u1')
+            self._block_exclusion_zone('board', self.exclusion_idx)
 
         return self._board
 
@@ -141,7 +141,7 @@ class GAME(object):
         if self.new_tmp_board_flag:
             self.new_tmp_board_flag = False
             # Add an extra column to account for the exit space region
-            self._tmp_board = np.zeros((self.n, self.m+1), dtype='u1')
+            self._tmp_board = np.zeros((self.n+1, self.m+1), dtype='u1')
             
         return self._tmp_board
 
@@ -158,10 +158,37 @@ class GAME(object):
             self._tmp_board[indices] = int(val)
 
     @property
-    def exit_col_idx(self):
-        return np.s_[1:self.n, self.m]
+    def exclusion_idx(self):
+        """
+        Generate indices for the exclusion zone.
 
-    def _block_exit_column(self, board_name, idx, value=2):
+        This is denoted by `1` for `n = 5` and `m = 5`
+
+        0 0 0 0 0 0
+        0 0 0 0 0 1
+        0 0 0 0 0 1
+        0 0 0 0 0 1
+        0 0 0 0 0 1
+        1 1 1 1 1 1
+
+        Note that the grid is 6 x 6 since we need to account
+        for the exit space.
+        """
+        row = []
+        col = []
+        for i in range(1, self.n+1):
+            if i < self.n:
+                row.append(i)
+                col.append(self.m)
+            else:
+                for j in range(self.m+1):
+                    row.append(i)
+                    col.append(j)
+
+        return tuple([row, col])
+
+
+    def _block_exclusion_zone(self, board_name, idx, value=2):
         """
         """
         setattr(self, board_name, (value, idx))
@@ -171,7 +198,7 @@ class GAME(object):
         """
         setattr(self, board_name, value)
         if block_idx is not None:
-            self._block_exit_column(board_name, block_idx, block_value)
+            self._block_exclusion_zone(board_name, block_idx, block_value)
 
     def enumerate_states(self):
         getattr(self, 'tmp_board')
