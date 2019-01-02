@@ -162,27 +162,30 @@ class GAME(object):
         return np.s_[1:self.n, self.m]
 
     def _block_exit_column(self, board_name, idx, value=2):
+        """
+        """
         setattr(self, board_name, (value, idx))
 
-    def _reset_board(self, board_name, idx, value=0, block=True, block_value=2):
+    def _reset_board(self, board_name, value=0, block_idx=None, block_value=2):
+        """
+        """
         setattr(self, board_name, value)
-        if block:
-            self._block_exit_column(board_name, idx, block_value)
+        if block_idx is not None:
+            self._block_exit_column(board_name, block_idx, block_value)
 
     def enumerate_states(self):
         getattr(self, 'tmp_board')
         for k in self.pieces.keys():
-            self.tmp_board = (1, tuple(self.pieces[k].ref_idx.T))
-            
             for row in range(self.n):
-                if row == 0:
-                    print(self.tmp_board)
-                else:
-                    shift(self.tmp_board, (1, 0), output=self.tmp_board)
-                    print(self.tmp_board)
-            self._reset_board('tmp_board', self.exit_col_idx, block=False)
-            
-            return
+                self._reset_board('tmp_board')
+                self.tmp_board = (1, tuple(self.pieces[k].ref_idx.T))
+                shift(self.tmp_board, (row, 0), output=self.tmp_board)
+                for col in range(self.m):
+                    if col == 0:
+                        print(self.tmp_board)
+                    else:
+                        shift(self.tmp_board, (0, 1), output=self.tmp_board)
+                        print(self.tmp_board)
 
     def _piece_fits(self, piece):
         """
