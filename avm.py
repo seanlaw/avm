@@ -91,31 +91,18 @@ class GAME(object):
         pass
 
 class PIECE(object):
-    def __init__(self, x=None, y=None, name=None, shape=None):
-        self._x = x
-        self._y = y
+    def __init__(self, ref_idx=None, name=None, shape=None):
+        self._ref_idx = ref_idx
         self._name = name
         self._shape = shape
 
     @property
-    def x(self):
-        return self._x
+    def ref_idx(self):
+        return self._ref_idx
 
-    @x.setter
-    def x(self, value):
-        self._x = value
-
-    @property
-    def y(self):
-        return self._y
-
-    @y.setter
-    def y(self, value):
-        self._y = value
-
-    @property
-    def pos(self):
-        return (self._x, self.y)
+    @ref_idx.setter
+    def ref_idxx(self, value):
+        self._ref_idx = value
 
     @property
     def name(self):
@@ -126,18 +113,20 @@ class PIECE(object):
         return self._shape
 
 class RED(PIECE):
-    def __init__(self, x=None, y=None):
+    def __init__(self):
         shape = "o-o"
-        super().__init__(x, y, name='A', shape=shape)
+        ref_idx = np.array([[0,0], [0,1]])
+        super().__init__(ref_idx=ref_idx, name='A', shape=shape)
 
 class ORANGE(PIECE):
-    def __init__(self, x=None, y=None):
+    def __init__(self):
         shape = """\
           o  
          / \ 
         o   o
         """
-        super().__init__(x, y, name='F', shape=shape)
+        ref_idx = np.array([[1,0], [0,1], [1,2]])
+        super().__init__(ref_idx=ref_idx, name='F', shape=shape)
 
 class YELLOW(PIECE):
     shape = """\
@@ -145,45 +134,50 @@ class YELLOW(PIECE):
      \ 
       o
     """
-    def __init__(self, x=None, y=None):
-        super().__init__(x, y, name='B', shape=shape)
+    ref_idx = np.array([[0,0], [1,1]])
+    def __init__(self):
+        super().__init__(ref_idx=ref_idx, name='B', shape=shape)
 
 class GREEN(PIECE):
-    def __init__(self, x=None, y=None):
+    def __init__(self):
         shape = """\
         o-o
            \ 
             o
         """
-        super().__init__(x, y, name='C', shape=shape)
+        ref_idx = np.array([[0,0], [0,1], [1,2]])
+        super().__init__(ref_idx=ref_idx, name='C', shape=shape)
 
 class BLUE(PIECE):
-    def __init__(self, x=None, y=None):
+    def __init__(self):
         shape = """\
           o
           |
         o-o
         """
-        super().__init__(x, y, name='D')
+        ref_idx = np.array([[0,1], [1,0], [1,1]])
+        super().__init__(ref_idx=ref_idx, name='D', shape=shape)
 
 class PURPLE(PIECE):
-    def __init__(self, x=None, y=None):
+    def __init__(self):
         shape = """\
           o
          / \ 
         o   o
         """
-        super().__init__(x, y, name='E', shape=shape)
+        ref_idx = np.array([[0,1], [1,0], [1,2]])
+        super().__init__(ref_idx=ref_idx, name='E', shape=shape)
 
 class WHITE(PIECE):
     def __init__(self):
         shape = "o"
-        uper().__init__(x, y, name='E', shape=shape)
+        ref_idx = np.array([[0,0]])
+        uper().__init__(ref_idx=ref_idx, name='E', shape=shape)
 
 if __name__ == '__main__':
-    #red = RED(0, 0)
-    #print(red.pos, red.shape)
-    #orange = ORANGE(0,0)
+    red = RED()
+    print(red.ref_idx)
+    #orange = ORANGE()
     #print(orange.shape)
     game = GAME()
     print(game.board)
