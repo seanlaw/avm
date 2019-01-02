@@ -204,15 +204,11 @@ class GAME(object):
         getattr(self, 'tmp_board')
         for k in self.pieces.keys():
             for row in range(self.n):
-                self._reset_board('tmp_board')
-                self.tmp_board = (1, tuple(self.pieces[k].ref_idx.T))
-                shift(self.tmp_board, (row, 0), output=self.tmp_board)
                 for col in range(self.m):
-                    if col == 0:
-                        print(self.tmp_board)
-                    else:
-                        shift(self.tmp_board, (0, 1), output=self.tmp_board)
-                        print(self.tmp_board)
+                    self._reset_board('tmp_board')
+                    self.tmp_board = (1, tuple(self.pieces[k].ref_idx.T))
+                    shift(self.tmp_board, (row, col), output=self.tmp_board)
+                    print(self.tmp_board)
 
     def _piece_fits(self, piece):
         """
