@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import scipy.sparse
 import numpy as np
+from textwrap import dedent
 
 class PIECE(object):
     def __init__(self, ref_idx=None, name=None, shape=None):
@@ -33,51 +33,52 @@ class RED(PIECE):
 
 class ORANGE(PIECE):
     def __init__(self):
-        shape = """\
-          o  
-         / \ 
-        o   o
-        """
+        shape = dedent("""
+                         o  
+                        / \ 
+                       o   o
+                       """)
         ref_idx = np.array([[1,0], [0,1], [1,2]])
         super().__init__(ref_idx=ref_idx, name='F', shape=shape)
 
 class YELLOW(PIECE):
-    shape = """\
-    o
-     \ 
-      o
-    """
-    ref_idx = np.array([[0,0], [1,1]])
+    
     def __init__(self):
+        shape = dedent("""
+                       o
+                        \ 
+                         o
+                       """)
+        ref_idx = np.array([[0,0], [1,1]])
         super().__init__(ref_idx=ref_idx, name='B', shape=shape)
 
 class GREEN(PIECE):
     def __init__(self):
-        shape = """\
-        o-o
-           \ 
-            o
-        """
+        shape = dedent("""
+                       o-o
+                          \ 
+                           o
+                       """)
         ref_idx = np.array([[0,0], [0,1], [1,2]])
         super().__init__(ref_idx=ref_idx, name='C', shape=shape)
 
 class BLUE(PIECE):
     def __init__(self):
-        shape = """\
-          o
-          |
-        o-o
-        """
+        shape = dedent("""
+                         o
+                         |
+                       o-o
+                       """)
         ref_idx = np.array([[0,1], [1,0], [1,1]])
         super().__init__(ref_idx=ref_idx, name='D', shape=shape)
 
 class PURPLE(PIECE):
     def __init__(self):
-        shape = """\
-          o
-         / \ 
-        o   o
-        """
+        shape = dedent("""
+                         o
+                        / \ 
+                       o   o
+                       """)
         ref_idx = np.array([[0,1], [1,0], [1,2]])
         super().__init__(ref_idx=ref_idx, name='E', shape=shape)
 
@@ -85,7 +86,7 @@ class WHITE(PIECE):
     def __init__(self):
         shape = "o"
         ref_idx = np.array([[0,0]])
-        uper().__init__(ref_idx=ref_idx, name='E', shape=shape)
+        super().__init__(ref_idx=ref_idx, name='E', shape=shape)
 
 if __name__ == '__main__':
     red = RED()
