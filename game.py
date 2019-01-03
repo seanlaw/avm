@@ -31,8 +31,8 @@ class GAME(object):
             'white_3': piece.WHITE(),
         }
 
-        self._states_matrix = None
-        self._states_piece = None
+        self._pieces_pos = None
+        self._pieces_name = None
 
     @property
     def m(self):
@@ -95,19 +95,20 @@ class GAME(object):
         return self._pieces['white_3']
 
     @property
-    def states_matrix(self):
-        return self._states_matrix
+    def pieces_pos(self):
+        return self._pieces_pos
 
-    @states_matrix.setter
-    def states_matrix(self, value):
-        self._states_matrix = value
+    @pieces_pos.setter
+    def pieces_pos(self, value):
+        self._pieces_pos = value
 
     @property
-    def states_piece(self):
-        return self._states_piece
+    def pieces_name(self):
+        return self._pieces_name
 
-    def states_piece(self, value):
-        self._states_piece = valie
+    @pieces_name.setter
+    def pieces_name(self, value):
+        self._pieces_name = value
 
     @property
     def new_board_flag(self):
@@ -219,28 +220,29 @@ class GAME(object):
         if block_idx is not None:
             self._block_exclusion_zone(board_name, block_idx, block_value)
 
-    def enumerate_states(self):
+    def enumerate_pieces(self):
         """
         For each piece orientation (designated by ref_idx):
         1. Clear the tmp_board (fill with zeros)
         2. Place the reference piece on the upper left of the tmp board
         3. Shift the piece down & across to the correct row & col, respectively
-        4. Store state in flattened dense matrix if the positioned piece does 
-           not land inside of the exclusion zone
+        4. Store the piece position in a flattened dense matrix if the positioned 
+           piece does not land inside of the exclusion zone and store the name
+           of the piece
 
         Since the number of enumerated states is small, we use a dense matrix.
         The final dimensions of the dense matrix is (n+1)*(m+1) and, therefore,
         includes the exclusion zone. A dense matrix makes it easier to 
         manipulate individual matrix elements, rows, and columns. 
 
-        Stores dense matrix in `states_matrix` attribute and its corresponding 
-        piece list in `states_piece` attribute
+        Stores dense position matrix in `pieces_pos` attribute and its 
+        corresponding piece name array in `pieces_name` attribute
         """
 
         getattr(self, 'tmp_board')
 
-        states_list = []
-        piece_list = []
+        pieces_pos_list = []
+        pieces_name_list = []
  
         n = 0
         for k in self.pieces.keys():
@@ -254,14 +256,14 @@ class GAME(object):
 
                         if not np.any(self.tmp_board[self.exclusion_idx]):
                             flattened_board = self.tmp_board.flatten()
-                            states_list.append(flattened_board)
+                            pieces_pos_list.append(flattened_board)
 
-                            piece_list.append(self.pieces[k].name)
+                            pieces_name_list.append(self.pieces[k].name)
 
                             n += 1  
 
-        self.states_matrix = np.array(states_list)
-        self.states_piece = piece_list
+        self.pieces_pos = np.array(pieces_pos_list, dtype='u1')
+        self.pieces_name = np.array(pieces_name_list, dtype='S1')
 
     def _piece_fits(self, piece):
         """

@@ -5,5 +5,5 @@ import piece
 
 if __name__ == '__main__':
     g = game.GAME()
-    g.enumerate_states()
-    print(g.states_matrix, g.states_piece)
+    g.enumerate_pieces()
+    print(g.pieces_pos, g.pieces_name)
