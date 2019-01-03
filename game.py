@@ -31,7 +31,8 @@ class GAME(object):
             'white_3': piece.WHITE(),
         }
 
-        self.states = None
+        self._states_matrix = None
+        self._states_piece = None
 
     @property
     def m(self):
@@ -94,12 +95,19 @@ class GAME(object):
         return self._pieces['white_3']
 
     @property
-    def states(self):
-        return self._states
+    def states_matrix(self):
+        return self._states_matrix
 
-    @states.setter
-    def states(self, value):
-        self._states = value
+    @states_matrix.setter
+    def states_matrix(self, value):
+        self._states_matrix = value
+
+    @property
+    def states_piece(self):
+        return self._states_piece
+
+    def states_piece(self, value):
+        self._states_piece = valie
 
     @property
     def new_board_flag(self):
@@ -217,24 +225,23 @@ class GAME(object):
         1. Clear the tmp_board (fill with zeros)
         2. Place the reference piece on the upper left of the tmp board
         3. Shift the piece down & across to the correct row & col, respectively
-        4. Store state in sparse matrix if the positioned piece does not land
-           inside of the exclusion zone
+        4. Store state in flattened dense matrix if the positioned piece does 
+           not land inside of the exclusion zone
 
-        The final dimensions of the sparse matrix is (n+1)*(m+1) and, therefore,
-        includes the exclusion zone. This will make it easier to map the sparse 
-        array back to the game board (dense array). Note that this is not a 
-        problem since the columns for the exclusion zone are always zero and
-        will never take up memory for the sparse matrix.
+        Since the number of enumerated states is small, we use a dense matrix.
+        The final dimensions of the dense matrix is (n+1)*(m+1) and, therefore,
+        includes the exclusion zone. A dense matrix makes it easier to 
+        manipulate individual matrix elements, rows, and columns. 
 
-        Stores CSC (Compressed Sparse Column) matrix in `states` attribute
+        Stores dense matrix in `states_matrix` attribute and its corresponding 
+        piece list in `states_piece` attribute
         """
 
         getattr(self, 'tmp_board')
 
-        sparse_rows = []
-        sparse_cols = []
-        sparse_data = []        
-        sparse_piece = []
+        states_list = []
+        piece_list = []
+ 
         n = 0
         for k in self.pieces.keys():
             for ref_idx in self.pieces[k].ref_idx:
@@ -242,24 +249,19 @@ class GAME(object):
                     for col in range(self.m):
                         self._reset_board('tmp_board')
                         self.tmp_board = (1, tuple(ref_idx.T)) 
-                        shift(self.tmp_board, (row, col), output=self.tmp_board)
+                        shift(self.tmp_board, (row, col), 
+                              output=self.tmp_board)
 
                         if not np.any(self.tmp_board[self.exclusion_idx]):
-                            nonzero_col_idx = self.tmp_board.flatten()
-                            nonzero_col_idx = np.argwhere(nonzero_col_idx > 0)
-                            nonzero_col_idx = nonzero_col_idx.flatten()
-                            nonzero_col_idx = nonzero_col_idx.tolist()
+                            flattened_board = self.tmp_board.flatten()
+                            states_list.append(flattened_board)
 
-                            sparse_rows.extend([n]*len(nonzero_col_idx))
-                            sparse_cols.extend(nonzero_col_idx)
-                            sparse_data.extend([1]*len(nonzero_col_idx))
+                            piece_list.append(self.pieces[k].name)
 
-                            n += 1
-        
-        coo = coo_matrix((sparse_data, (sparse_rows, sparse_cols)), 
-                         shape=(n, (self.n+1)*(self.m+1)))
+                            n += 1  
 
-        self.states = coo.tocsc()
+        self.states_matrix = np.array(states_list)
+        self.states_piece = piece_list
 
     def _piece_fits(self, piece):
         """

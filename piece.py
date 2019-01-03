@@ -126,7 +126,7 @@ class WHITE(PIECE):
         start_idx = np.array([[0,0]])
         ref_idx, ref_arr = self.get_ref_rots(start_idx, 1)  # Don't rotate!
 
-        super().__init__(ref_idx=ref_idx, ref_arr=ref_arr, name='E', shape=shape)
+        super().__init__(ref_idx=ref_idx, ref_arr=ref_arr, name='G', shape=shape)
 
 if __name__ == '__main__':
     #red = RED()
