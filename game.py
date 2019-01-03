@@ -31,6 +31,8 @@ class GAME(object):
             'white_3': piece.WHITE(),
         }
 
+        self.states = None
+
     @property
     def m(self):
         return self._m
@@ -90,6 +92,14 @@ class GAME(object):
     @property
     def white_3(self):
         return self._pieces['white_3']
+
+    @property
+    def states(self):
+        return self._states
+
+    @states.setter
+    def states(self, value):
+        self._states = value
 
     @property
     def new_board_flag(self):
@@ -188,7 +198,6 @@ class GAME(object):
 
         return tuple([row_idx, col_idx])
 
-
     def _block_exclusion_zone(self, board_name, idx, value=2):
         """
         See `exclusion_idx` for exclusion zone
@@ -217,7 +226,7 @@ class GAME(object):
         problem since the columns for the exclusion zone are always zero and
         will never take up memory for the sparse matrix.
 
-        Returns a CSC (Compressed Sparse Column) matrix
+        Stores CSC (Compressed Sparse Column) matrix in `states` attribute
         """
 
         getattr(self, 'tmp_board')
@@ -234,7 +243,7 @@ class GAME(object):
                         self._reset_board('tmp_board')
                         self.tmp_board = (1, tuple(ref_idx.T)) 
                         shift(self.tmp_board, (row, col), output=self.tmp_board)
-                        
+
                         if not np.any(self.tmp_board[self.exclusion_idx]):
                             nonzero_col_idx = self.tmp_board.flatten()
                             nonzero_col_idx = np.argwhere(nonzero_col_idx > 0)
@@ -250,7 +259,7 @@ class GAME(object):
         coo = coo_matrix((sparse_data, (sparse_rows, sparse_cols)), 
                          shape=(n, (self.n+1)*(self.m+1)))
 
-        return coo.tocsc()
+        self.states = coo.tocsc()
 
     def _piece_fits(self, piece):
         """
