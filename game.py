@@ -3,6 +3,7 @@
 import numpy as np
 import piece
 from scipy.ndimage.interpolation import shift
+from scipy.sparse import coo_matrix
 
 class GAME(object):
     def __init__(self, n=5, m=5):
@@ -190,6 +191,7 @@ class GAME(object):
 
     def _block_exclusion_zone(self, board_name, idx, value=2):
         """
+        See `exclusion_idx` for exclusion zone
         """
         setattr(self, board_name, (value, idx))
 
@@ -201,16 +203,54 @@ class GAME(object):
             self._block_exclusion_zone(board_name, block_idx, block_value)
 
     def enumerate_states(self):
+        """
+        For each piece orientation (designated by ref_idx):
+        1. Clear the tmp_board (fill with zeros)
+        2. Place the reference piece on the upper left of the tmp board
+        3. Shift the piece down & across to the correct row & col, respectively
+        4. Store state in sparse matrix if the positioned piece does not land
+           inside of the exclusion zone
+
+        The final dimensions of the sparse matrix is (n+1)*(m+1) and, therefore,
+        includes the exclusion zone. This will make it easier to map the sparse 
+        array back to the game board (dense array). Note that this is not a 
+        problem since the columns for the exclusion zone are always zero and
+        will never take up memory for the sparse matrix.
+
+        Returns a CSC (Compressed Sparse Column) matrix
+        """
+
         getattr(self, 'tmp_board')
+
+        sparse_rows = []
+        sparse_cols = []
+        sparse_data = []        
+        sparse_piece = []
+        n = 0
         for k in self.pieces.keys():
-            for row in range(self.n):
-                for col in range(self.m):
-                    self._reset_board('tmp_board')
-                    ref_idx = self.pieces[k].ref_idx[0].T
-                    self.tmp_board = (1, tuple(ref_idx))
-                    shift(self.tmp_board, (row, col), output=self.tmp_board)
-                    #if self.tmp_board[self.exclusion_idx] 
-                    print(self.tmp_board)
+            for ref_idx in self.pieces[k].ref_idx:
+                for row in range(self.n):
+                    for col in range(self.m):
+                        self._reset_board('tmp_board')
+                        self.tmp_board = (1, tuple(ref_idx.T)) 
+                        shift(self.tmp_board, (row, col), output=self.tmp_board)
+                        
+                        if not np.any(self.tmp_board[self.exclusion_idx]):
+                            nonzero_col_idx = self.tmp_board.flatten()
+                            nonzero_col_idx = np.argwhere(nonzero_col_idx > 0)
+                            nonzero_col_idx = nonzero_col_idx.flatten()
+                            nonzero_col_idx = nonzero_col_idx.tolist()
+
+                            sparse_rows.extend([n]*len(nonzero_col_idx))
+                            sparse_cols.extend(nonzero_col_idx)
+                            sparse_data.extend([1]*len(nonzero_col_idx))
+
+                            n += 1
+        
+        coo = coo_matrix((sparse_data, (sparse_rows, sparse_cols)), 
+                         shape=(n, (self.n+1)*(self.m+1)))
+
+        return coo.tocsc()
 
     def _piece_fits(self, piece):
         """
