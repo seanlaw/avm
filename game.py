@@ -174,18 +174,18 @@ class GAME(object):
         Note that the grid is 6 x 6 since we need to account
         for the exit space.
         """
-        row = []
-        col = []
-        for i in range(1, self.n+1):
-            if i < self.n:
-                row.append(i)
-                col.append(self.m)
+        row_idx = []
+        col_idx = []
+        for row in range(1, self.n+1):
+            if row < self.n:
+                row_idx.append(row)
+                col_idx.append(self.m)
             else:
-                for j in range(self.m+1):
-                    row.append(i)
-                    col.append(j)
+                for col in range(self.m+1):
+                    row_idx.append(row)
+                    col_idx.append(col)
 
-        return tuple([row, col])
+        return tuple([row_idx, col_idx])
 
 
     def _block_exclusion_zone(self, board_name, idx, value=2):
@@ -206,8 +206,10 @@ class GAME(object):
             for row in range(self.n):
                 for col in range(self.m):
                     self._reset_board('tmp_board')
-                    self.tmp_board = (1, tuple(self.pieces[k].ref_idx.T))
+                    ref_idx = self.pieces[k].ref_idx[0].T
+                    self.tmp_board = (1, tuple(ref_idx))
                     shift(self.tmp_board, (row, col), output=self.tmp_board)
+                    #if self.tmp_board[self.exclusion_idx] 
                     print(self.tmp_board)
 
     def _piece_fits(self, piece):

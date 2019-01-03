@@ -123,8 +123,8 @@ class PURPLE(PIECE):
 class WHITE(PIECE):
     def __init__(self):
         shape = "o"
-        ref_idx = np.array([[0,0]])
-        ref_idx, ref_arr = self.get_ref_rots(start_idx, 0)
+        start_idx = np.array([[0,0]])
+        ref_idx, ref_arr = self.get_ref_rots(start_idx, 1)  # Don't rotate!
 
         super().__init__(ref_idx=ref_idx, ref_arr=ref_arr, name='E', shape=shape)
 
