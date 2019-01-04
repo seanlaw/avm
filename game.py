@@ -32,7 +32,9 @@ class GAME(object):
         }
 
         self._pieces_pos = None
-        self._pieces_name = None
+
+        self._piece_to_one_hot = None
+        self._one_hot_to_piece = None
 
     @property
     def m(self):
@@ -101,14 +103,6 @@ class GAME(object):
     @pieces_pos.setter
     def pieces_pos(self, value):
         self._pieces_pos = value
-
-    @property
-    def pieces_name(self):
-        return self._pieces_name
-
-    @pieces_name.setter
-    def pieces_name(self, value):
-        self._pieces_name = value
 
     @property
     def new_board_flag(self):
@@ -220,30 +214,52 @@ class GAME(object):
         if block_idx is not None:
             self._block_exclusion_zone(board_name, block_idx, block_value)
 
-    def enumerate_pieces(self):
+    def piece_to_one_hot(self, piece_key, reset=False):
+        if self._piece_to_one_hot is None or reset:
+            self._piece_to_one_hot = {}
+            keys = self.pieces.keys()
+
+            for i, k in enumerate(keys):
+                self._piece_to_one_hot[k] = [0] * len(keys)
+                self._piece_to_one_hot[k][i] = 1
+
+        return self._piece_to_one_hot[piece_key]
+
+    def one_hot_to_piece(self, idx, reset=False):
+        if self._one_hot_to_piece is None or reset:
+            keys = self.pieces.keys()
+            self._one_hot_to_piece = [None] * len(keys)
+
+            for i, k in enumerate(keys):
+                self._one_hot_to_piece[i] = k
+
+        return self._one_hot_to_piece[idx]
+
+
+
+    def enumerate_positions(self):
         """
         For each piece orientation (designated by ref_idx):
         1. Clear the tmp_board (fill with zeros)
         2. Place the reference piece on the upper left of the tmp board
         3. Shift the piece down & across to the correct row & col, respectively
         4. Store the piece position in a flattened dense matrix if the positioned 
-           piece does not land inside of the exclusion zone and store the name
-           of the piece
+           piece does not land inside of the exclusion zone and also append the one 
+           hot encoded piece name to this flattened.
 
         Since the number of enumerated states is small, we use a dense matrix.
-        The final dimensions of the dense matrix is (n+1)*(m+1) and, therefore,
-        includes the exclusion zone. A dense matrix makes it easier to 
-        manipulate individual matrix elements, rows, and columns. 
+        The final dimensions of the dense matrix is (n+1)*(m+1)+n_pieces and, 
+        therefore, includes the exclusion zone and one hot encoded piece name. 
+        A dense matrix makes it easier to manipulate individual matrix elements, 
+        rows, and columns. 
 
-        Stores dense position matrix in `pieces_pos` attribute and its 
-        corresponding piece name array in `pieces_name` attribute
+        Stores dense position matrix in `pieces_pos` attribute
         """
 
         getattr(self, 'tmp_board')
 
         pieces_pos_list = []
-        pieces_name_list = []
- 
+
         n = 0
         for k in self.pieces.keys():
             for ref_idx in self.pieces[k].ref_idx:
@@ -255,15 +271,13 @@ class GAME(object):
                               output=self.tmp_board)
 
                         if not np.any(self.tmp_board[self.exclusion_idx]):
-                            flattened_board = self.tmp_board.flatten()
+                            flattened_board = self.tmp_board.flatten().tolist()
+                            flattened_board.extend(self.piece_to_one_hot(k))
                             pieces_pos_list.append(flattened_board)
-
-                            pieces_name_list.append(k)
 
                             n += 1  
 
         self.pieces_pos = np.array(pieces_pos_list, dtype='u1')
-        self.pieces_name = np.array(pieces_name_list, dtype='S')
 
     def _piece_fits(self, piece):
         """
