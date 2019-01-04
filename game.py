@@ -258,12 +258,12 @@ class GAME(object):
                             flattened_board = self.tmp_board.flatten()
                             pieces_pos_list.append(flattened_board)
 
-                            pieces_name_list.append(self.pieces[k].name)
+                            pieces_name_list.append(k)
 
                             n += 1  
 
         self.pieces_pos = np.array(pieces_pos_list, dtype='u1')
-        self.pieces_name = np.array(pieces_name_list, dtype='S1')
+        self.pieces_name = np.array(pieces_name_list, dtype='S')
 
     def _piece_fits(self, piece):
         """
