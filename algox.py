@@ -4,7 +4,7 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from collections import deque
 
-def algorithm_x(x, ref_rows, partials=None, solutions=None):
+def search(x, ref_rows, partials=None, solutions=None, primary_idx=None):
     """
     """
     if partials is None:
@@ -40,7 +40,7 @@ def algorithm_x(x, ref_rows, partials=None, solutions=None):
         
         new_ref_rows = dict(list(enumerate([ref_rows[k] for k in keep_rows])))
         
-        algorithm_x(x[keep_rows][:, keep_cols], new_ref_rows, partials, solutions)
+        search(x[keep_rows][:, keep_cols], new_ref_rows, partials, solutions)
         
         if len(partials) > 0:
             partials.pop()
@@ -49,7 +49,7 @@ def algorithm_x(x, ref_rows, partials=None, solutions=None):
 
 if __name__ == '__main__':
 
-    # Example #1
+    # Exact Cover Example #1
     arr = np.array([[1, 0, 0, 0],
                     [0, 1, 1, 0],
                     [1, 0, 0, 1],
@@ -61,9 +61,9 @@ if __name__ == '__main__':
     csc = csc_matrix(arr)
     ref_rows = dict(list(enumerate(range(csc.shape[0]))))
 
-    print(algorithm_x(csc, ref_rows))
+    print(search(csc, ref_rows))
 
-    # Example #2
+    # Exact Cover Example #2
     arr = np.array([[1, 0, 0, 1, 0, 0, 1],
                     [1, 0, 0, 1, 0, 0, 0],
                     [0, 0, 0, 1, 1, 0, 1],
@@ -81,4 +81,6 @@ if __name__ == '__main__':
                 5: 'F',
                }
 
-    print(algorithm_x(csc, ref_rows))
+    print(search(csc, ref_rows))
+
+    # Generalized Cover Example #1
