@@ -84,3 +84,32 @@ if __name__ == '__main__':
     print(search(csc, ref_rows))
 
     # Generalized Cover Example #1
+    # 3x3 grid with one L-shaped, one (2x2) Square-shaped, and one 
+    # Singleton-shaped piece.
+    # Columns 0-8 (inclusive) represent the board and are secondary.
+    # The L-shaped ('A') piece is primary (i.e., required) while the 
+    # Square-shaped ('B')and Singleton-shaped ('C') pieces are secondary.
+    #                0  1  2  3  4  5  6  7  8  A  B  C
+    arr = np.array([[1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0],
+                    [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0],
+                    [0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0],
+                    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+    ref_rows = dict(list(enumerate(range(csc.shape[0]))))
+
+    print(search(csc, ref_rows))
