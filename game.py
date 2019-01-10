@@ -262,7 +262,15 @@ class GAME(object):
 
         n = 0
         for k in self.pieces.keys():
+            # Add edge case when the piece is NOT on the board
+            self._reset_board('tmp_board')
+            flattened_board = self.tmp_board.flatten().tolist()
+            flattened_board.extend(self.piece_to_one_hot(k))
+            pieces_pos_list.append(flattened_board)
+            n += 1
+
             for ref_idx in self.pieces[k].ref_idx:
+                # Add all other permutations
                 for row in range(self.n):
                     for col in range(self.m):
                         self._reset_board('tmp_board')
