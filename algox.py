@@ -3,6 +3,7 @@
 import numpy as np
 from scipy.sparse import csc_matrix
 from collections import deque
+from dlx import DLX
 
 def _search(x, ref_rows, partials=None, solutions=None, level=0):
     """
@@ -52,11 +53,41 @@ def _search(x, ref_rows, partials=None, solutions=None, level=0):
     
     return solutions
 
-def search(x):
+def search(x, y, primary_idx=None):
+    """
+    Dancing Links Wrapper
+    """
 
-    return
+    return 
 
 if __name__ == '__main__':
+    # cols=['a','b','c','d']
+    # lines=[['a'],['b'],['c'],['d'],
+    #     ['a','b'],['a','c'],['a','d'],['b','c'],
+    #     ['b','d'],['c','d'],['a','b','c'],['a','b','d'],
+    #     ['a','c','d'],['b','c','d'],['a','b','c','d'],]
+
+    arr = np.array([[1, 0, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                    [1, 1, 0, 0],
+                    [1, 0, 1, 0],
+                    [1, 0, 0, 1],
+                    [0, 1, 1, 0],
+                    [0, 1, 0, 1],
+                    [0, 0, 1, 1],
+                    [1, 1, 1, 0],
+                    [1, 1, 0, 1],
+                    [1, 0, 1, 1],
+                    [0, 1, 1, 1],
+                    [1, 1, 1, 1]
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+
+    ref_rows = dict(list(enumerate(range(csc.shape[0]))))
+    #print(search(csc, ref_rows))
 
     # Exact Cover Example #1
     arr = np.array([[1, 0, 0, 0],
@@ -71,6 +102,7 @@ if __name__ == '__main__':
     ref_rows = dict(list(enumerate(range(csc.shape[0]))))
 
     print(_search(csc, ref_rows))
+    print(search(csc, ref_rows))
 
     # Exact Cover Example #2
     arr = np.array([[1, 0, 0, 1, 0, 0, 1],
@@ -90,7 +122,8 @@ if __name__ == '__main__':
                 5: 'F',
                }
 
-    print(_search(csc, ref_rows))
+    #print(_search(csc, ref_rows))
+    #print(search(csc, ref_rows))
 
     # Generalized Cover Example #1
     # 2x2 grid with one L-shaped and two Singleton-shaped pieces.
