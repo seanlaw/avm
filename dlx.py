@@ -9,9 +9,6 @@ class DLX(object):
         self._A = A
 
         self._matrix = None
-        self._rows = None
-        self._cols = None
-        self._h = None
 
     @property
     def A(self):
@@ -24,21 +21,8 @@ class DLX(object):
 
         return self._matrix
 
-    @property
-    def rows(self):
-        return self._rows
-
-    @property
-    def cols(self):
-        return self._cols
-
-    @property
-    def h(self):
-        if self._h is None:
-            pass
-
-        return self._h
-
+    def search(self):
+        return
 
 if __name__ == "__main__":
     arr = np.array([[0, 0, 1, 0, 1, 1, 0],
@@ -52,4 +36,4 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
 
     dlx = DLX(csc)
-    dlx.matrix
+    

@@ -9,6 +9,7 @@ class MATRIX(object):
         self._populate_matrix()
         self._column_labels = column_labels
         self._secondary_idx = secondary_idx
+        self._generalize()
 
     @property
     def h(self):
@@ -73,19 +74,12 @@ class MATRIX(object):
                     x.R.L = x
                 last = x
 
-        # Left/Right Indices
-        for row in range(self._A.shape[0]):
-            left_idx = np.roll(self._A[row, :].nonzero()[1], 1)
-            right_idx = np.roll(self._A[row, :].nonzero()[1], -1)                
-            #print(row, left_idx)
-            #print(row, right_idx)
-
-        # Up/Down Indices
-        for col in range(self._A.shape[1]):
-            up_idx = np.roll(self._A[: ,col].nonzero()[0], 1)
-            down_idx = np.roll(self._A[: ,col].nonzero()[0], -1)
-            #print(col, up_idx)
-            #print(col, down_idx)
+    def _generalize(self):
+        if self.secondary_idx is not None:
+            for col in self.secondary_idx:
+                col_header = self.column_headers[col]
+                col_header.L = col_header
+                col_header.R = col_header
 
 if __name__ == '__main__':
     pass
