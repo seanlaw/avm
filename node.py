@@ -25,11 +25,13 @@ class ROOT(object):
     def R(self, value):
         self._right = value
 
-    def remove(self):
-        pass
-
-    def put_back(self):
-        pass
+    def sweep(self, direction_attr):
+        x = getattr(self, direction_attr)
+        while x != self:
+            yield x
+            x = getattr(x, direction_attr)
+        else:
+            return
 
 class DATA(ROOT):
     """
@@ -83,6 +85,7 @@ class COLUMN(ROOT):
     def __init__(self):
         super().__init__()
         self._up = self
+        self._column = self
         self._size = None
         self._name = None
 
@@ -93,6 +96,14 @@ class COLUMN(ROOT):
     @U.setter
     def U(self, value):
         self._up = value
+
+    @property
+    def column(self):
+        return self._column
+
+    @column.setter
+    def column(self, value):
+        self._column = value
 
     @property
     def S(self):

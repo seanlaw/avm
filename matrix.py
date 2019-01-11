@@ -6,7 +6,8 @@ class MATRIX(object):
         self._h = ROOT()  # Master "root" header for all headers
         self._column_headers = {}
         self._A = A.sorted_indices()
-        self._populate_matrix()
+        self._add_column_headers()
+        self._add_data()
         self._column_labels = column_labels
         self._secondary_idx = secondary_idx
         self._generalize()
@@ -26,13 +27,6 @@ class MATRIX(object):
     @property
     def secondary_idx(self):
         return self._secondary_idx
-
-    def _populate_matrix(self):
-        """
-        """
-
-        self._add_column_headers()
-        self._add_data()
 
     def _add_column_headers(self):
         """
@@ -80,6 +74,26 @@ class MATRIX(object):
                 col_header = self.column_headers[col]
                 col_header.L = col_header
                 col_header.R = col_header
+
+    def cover(self, c):
+        #print(c)
+        c.R.L = c.L
+        c.L.R = c.R
+        for i in c.sweep('D'):
+            for j in i.sweep('R'):
+                j.D.U = j.U
+                j.U.D = j.D
+                j.column.S = j.column.S - 1
+
+    def uncover(self, c):
+        for i in c.sweep('U'):
+            for j in i.sweep('L'):
+                j.column.S = j.column.S + 1
+                j.D.U = j
+                j.U.D = j
+        c.R.L = c
+        c.L.R = c
+
 
 if __name__ == '__main__':
     pass
