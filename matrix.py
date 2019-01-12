@@ -2,14 +2,13 @@ from node import ROOT, DATA, COLUMN
 import numpy as np
 
 class MATRIX(object):
-    def __init__(self, A, column_labels=None, secondary_idx=None):
+    def __init__(self, A, primary_idx=None):
         self._h = ROOT()  # Master "root" header for all headers
         self._column_headers = {}
         self._A = A.sorted_indices()
         self._add_column_headers()
         self._add_data()
-        self._column_labels = column_labels
-        self._secondary_idx = secondary_idx
+        self._primary_idx = primary_idx
         self._generalize()
 
     @property
@@ -25,8 +24,8 @@ class MATRIX(object):
         return self._A
 
     @property
-    def secondary_idx(self):
-        return self._secondary_idx
+    def primary_idx(self):
+        return self._primary_idx
 
     def _add_column_headers(self):
         """
@@ -69,14 +68,25 @@ class MATRIX(object):
                 last = x
 
     def _generalize(self):
-        if self.secondary_idx is not None:
-            for col in self.secondary_idx:
+        if self.primary_idx is not None:
+            self.h.L = self.h
+            self.h.R = self.h
+            for col in self._primary_idx:
+                self.h.L.R = self.column_headers[col]
+                self.h.L.R.L = self.h.L
+                self.h.L.R.R = self.h
+                self.h.L = self.h.L.R
+
+            primary_set = set(self._primary_idx)
+            full_set = set(range(self.A.shape[1]))
+            secondary_idx = list(full_set - primary_set)
+
+            for col in secondary_idx:
                 col_header = self.column_headers[col]
                 col_header.L = col_header
                 col_header.R = col_header
 
     def cover(self, c):
-        #print(c)
         c.R.L = c.L
         c.L.R = c.R
         for i in c.sweep('D'):

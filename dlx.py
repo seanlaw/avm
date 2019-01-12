@@ -4,11 +4,13 @@ from matrix import MATRIX
 import numpy as np
 from scipy.sparse import csc_matrix
 from collections import deque
+from itertools import permutations
 
 class DLX(object):
-    def __init__(self, A):
+    def __init__(self, A, column_labels=None, primary_idx=None):
         self._A = A
-
+        self._column_labels = column_labels
+        self._primary_idx = primary_idx
         self._matrix = None
 
     @property
@@ -18,7 +20,9 @@ class DLX(object):
     @property
     def matrix(self):
         if self._matrix is None:
-            self._matrix = MATRIX(self._A)
+            self._matrix = MATRIX(self._A,
+                                  self._primary_idx,
+                                 )
 
         return self._matrix
 
@@ -62,6 +66,10 @@ class DLX(object):
                 partials.pop()
         self.matrix.uncover(c)
 
+        if self._column_labels is not None:
+            solutions = [self._column_labels[row] for soln in solutions
+                         for row in soln]
+
         return solutions
 
 if __name__ == "__main__":
@@ -89,7 +97,37 @@ if __name__ == "__main__":
                    ], dtype='u1')
 
     csc = csc_matrix(arr)
+    col_labels = {0: 'A',
+                  1: 'B',
+                  2: 'C',
+                  3: 'D',
+                  4: 'E',
+                  5: 'F',
+                 }
 
-    dlx = DLX(csc)
+    dlx = DLX(csc, col_labels)
     print(dlx.search())
+
+    # Generalized Exact Cover Example
+    # 2x2 grid with one L-shaped and two Singleton-shaped pieces.
+    #                0  1  2  3  A  B  C
+    arr = np.array([[1, 0, 1, 1, 1, 0, 0],
+                    [1, 0, 0, 0, 0, 1, 0],
+                    [0, 1, 0, 0, 0, 1, 0],
+                    [0, 0, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 0, 1, 0],
+                    [1, 0, 0, 0, 0, 0, 1],
+                    [0, 1, 0, 0, 0, 0, 1],
+                    [0, 0, 1, 0, 0, 0, 1],
+                    [0, 0, 0, 1, 0, 0, 1],
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+    
+    # Permute all combinations of pieces
+    pieces = {4: 'A', 5: 'B', 6: 'C'}
+    for i in range(1, len(pieces)+1):
+        for perm in permutations(pieces.keys(), i):
+            dlx = DLX(csc, primary_idx=list(perm))
+            print(f"Pieces {[pieces[p] for p in perm]}:", dlx.search())
 
