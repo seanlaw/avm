@@ -4,7 +4,7 @@ from matrix import MATRIX
 import numpy as np
 from scipy.sparse import csc_matrix
 from collections import deque
-from itertools import permutations, combinations
+from itertools import combinations
 
 class DLX(object):
     def __init__(self, A, column_labels=None, primary_idx=None):
