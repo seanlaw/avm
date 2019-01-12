@@ -4,7 +4,7 @@ from matrix import MATRIX
 import numpy as np
 from scipy.sparse import csc_matrix
 from collections import deque
-from itertools import permutations
+from itertools import permutations, combinations
 
 class DLX(object):
     def __init__(self, A, column_labels=None, primary_idx=None):
@@ -127,7 +127,40 @@ if __name__ == "__main__":
     # Permute all combinations of pieces
     pieces = {4: 'A', 5: 'B', 6: 'C'}
     for i in range(1, len(pieces)+1):
-        for perm in permutations(pieces.keys(), i):
-            dlx = DLX(csc, primary_idx=list(perm))
-            print(f"Pieces {[pieces[p] for p in perm]}:", dlx.search())
+        for combo in combinations(pieces.keys(), i):
+            dlx = DLX(csc, primary_idx=list(combo))
+            print(f"Pieces {[pieces[c] for c in combo]}:", dlx.search())
+    # Generalized Cover Example #2
+    # 3x3 grid with one L-shaped, one (2x2) Square-shaped, and one 
+    # Singleton-shaped piece.
+    # Columns 0-8 (inclusive) represent the board and are secondary.
+    # The L-shaped ('A') piece is primary (i.e., required) while the 
+    # Square-shaped ('B')and Singleton-shaped ('C') pieces are secondary.
+    #                0  1  2  3  4  5  6  7  8  A  B  C
+    arr = np.array([[1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0],
+                    [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0],
+                    [0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0],
+                    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+    # Permute all combinations of pieces
+    pieces = {9: 'A', 10: 'B', 11: 'C'}
+    for i in range(1, len(pieces)+1):
+        for combo in combinations(pieces.keys(), i):
+            dlx = DLX(csc, primary_idx=list(combo))
+            print(f"Pieces {[pieces[c] for c in combo]}:", dlx.search())
 
