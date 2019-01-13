@@ -15,17 +15,10 @@ if __name__ == '__main__':
     stop = start + len(g.pieces.keys())
     pieces = dict(zip(range(start, stop), g.pieces.keys()))
 
-    # TODO
-    # 1. Always include red piece
-    # 1. Always use 3 or more pieces
-
     delayed_values = []
-    for i in range(1, len(pieces)+1):
-        for combo in combinations(pieces.keys(), i):
-            dlx = DLX(csc, primary_idx=list(combo))
-            #dlx.search()
-            delayed_values.append(delayed(dlx.search)())
-            #print(f"Pieces {[pieces[c] for c in combo]}:", dlx.search())
-
+    dlx = DLX(csc, primary_idx=list(pieces.keys()))
+    #dlx.search()
+    delayed_values.append(delayed(dlx.search)())
+    #print(f"Pieces {[pieces[c] for c in combo]}:", dlx.search())
     results = compute(*delayed_values, scheduler='processes', num_workers=4)
     #print(results)

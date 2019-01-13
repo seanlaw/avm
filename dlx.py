@@ -4,7 +4,6 @@ from matrix import MATRIX
 import numpy as np
 from scipy.sparse import csc_matrix
 from collections import deque
-import timeit
 
 class DLX(object):
     def __init__(self, A, column_labels=None, primary_idx=None):
@@ -35,18 +34,21 @@ class DLX(object):
 
         return col
 
-    def search(self, k=0, partials=None, solutions=None):
+    def search(self, k=0, partials=None, level=0, print_flag=True):
         if partials is None:
             partials = deque()
-
-        if solutions is None:
-            solutions = []
 
         if self.matrix.h.R == self.matrix.h:
             if len(partials) == 0:
                 print("Your matrix is empty!")
             else:
-                solutions.append(list(partials))
+                if not print_flag:
+                    return 
+                if self._column_labels is not None:
+                    sol = [self._column_labels[row] for row in partials]
+                    print(sol)
+                else:
+                    print(list(partials))
             return
 
         c = self._choose_column()
@@ -56,7 +58,7 @@ class DLX(object):
             partials.append(r.row)  # r is included in partial solution
             for j in r.sweep('R'):
                 self.matrix.cover(j.column)
-            self.search(k+1, partials, solutions)
+            self.search(k+1, partials, level+1, print_flag)
             r = Ok
             c = r.column
             for j in r.sweep('L'):
@@ -66,11 +68,7 @@ class DLX(object):
                 partials.pop()
         self.matrix.uncover(c)
 
-        if self._column_labels is not None:
-            solutions = [self._column_labels[row] for soln in solutions
-                         for row in soln]
-
-        return solutions
+        return
 
 if __name__ == "__main__":
     # Knuth Example
@@ -85,7 +83,7 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
 
     dlx = DLX(csc)
-    print(dlx.search())
+    dlx.search()
 
     # Wikipedia Example
     arr = np.array([[1, 0, 0, 1, 0, 0, 1],
@@ -106,7 +104,7 @@ if __name__ == "__main__":
                  }
 
     dlx = DLX(csc, col_labels)
-    print(dlx.search())
+    dlx.search()
 
     # Generalized Exact Cover Example
     # 2x2 grid with one L-shaped and two Singleton-shaped pieces.
@@ -129,9 +127,7 @@ if __name__ == "__main__":
     
     pieces = {4: 'A', 5: 'B', 6: 'C'}
     dlx = DLX(csc, primary_idx=pieces.keys())
-    print(f"Pieces {pieces.values()}:", dlx.search())
-    dlx = DLX(csc, primary_idx=pieces.keys())
-    print("Average Time (n=1000):",timeit.timeit(dlx.search, number=1000))
+    dlx.search()
 
     # Generalized Cover Example #2
     # 3x3 grid with one L-shaped, one (2x2) Square-shaped, and one 
@@ -166,6 +162,4 @@ if __name__ == "__main__":
 
     pieces = {9: 'A', 10: 'B', 11: 'C'}
     dlx = DLX(csc, primary_idx=pieces.keys())
-    print(f"Pieces {pieces.values()}:", dlx.search())
-    dlx = DLX(csc, primary_idx=pieces.keys())
-    print("Average Time (n=1000):", timeit.timeit(dlx.search, number=1000))    
+    dlx.search()
