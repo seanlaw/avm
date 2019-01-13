@@ -4,7 +4,7 @@ from matrix import MATRIX
 import numpy as np
 from scipy.sparse import csc_matrix
 from collections import deque
-from itertools import combinations
+import timeit
 
 class DLX(object):
     def __init__(self, A, column_labels=None, primary_idx=None):
@@ -112,24 +112,27 @@ if __name__ == "__main__":
     # 2x2 grid with one L-shaped and two Singleton-shaped pieces.
     #                0  1  2  3  A  B  C
     arr = np.array([[1, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0],  # No cover, row 1
                     [1, 0, 0, 0, 0, 1, 0],
                     [0, 1, 0, 0, 0, 1, 0],
                     [0, 0, 1, 0, 0, 1, 0],
                     [0, 0, 0, 1, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 1, 0],  # No cover, row 6
                     [1, 0, 0, 0, 0, 0, 1],
                     [0, 1, 0, 0, 0, 0, 1],
                     [0, 0, 1, 0, 0, 0, 1],
                     [0, 0, 0, 1, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 1],  # No cover, row 11
                    ], dtype='u1')
 
     csc = csc_matrix(arr)
     
-    # Permute all combinations of pieces
     pieces = {4: 'A', 5: 'B', 6: 'C'}
-    for i in range(1, len(pieces)+1):
-        for combo in combinations(pieces.keys(), i):
-            dlx = DLX(csc, primary_idx=list(combo))
-            print(f"Pieces {[pieces[c] for c in combo]}:", dlx.search())
+    dlx = DLX(csc, primary_idx=pieces.keys())
+    print(f"Pieces {pieces.values()}:", dlx.search())
+    dlx = DLX(csc, primary_idx=pieces.keys())
+    print("Average Time (n=1000):",timeit.timeit(dlx.search, number=1000))
+
     # Generalized Cover Example #2
     # 3x3 grid with one L-shaped, one (2x2) Square-shaped, and one 
     # Singleton-shaped piece.
@@ -141,10 +144,12 @@ if __name__ == "__main__":
                     [0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
                     [0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0],
                     [0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # No cover, row 4                    
                     [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0],
                     [0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0],
                     [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0],
                     [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],  # No cover, row 9                 
                     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                     [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -154,13 +159,13 @@ if __name__ == "__main__":
                     [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
                     [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # No cover, row 19                 
                    ], dtype='u1')
 
     csc = csc_matrix(arr)
-    # Permute all combinations of pieces
-    pieces = {9: 'A', 10: 'B', 11: 'C'}
-    for i in range(1, len(pieces)+1):
-        for combo in combinations(pieces.keys(), i):
-            dlx = DLX(csc, primary_idx=list(combo))
-            print(f"Pieces {[pieces[c] for c in combo]}:", dlx.search())
 
+    pieces = {9: 'A', 10: 'B', 11: 'C'}
+    dlx = DLX(csc, primary_idx=pieces.keys())
+    print(f"Pieces {pieces.values()}:", dlx.search())
+    dlx = DLX(csc, primary_idx=pieces.keys())
+    print("Average Time (n=1000):", timeit.timeit(dlx.search, number=1000))    
