@@ -235,23 +235,28 @@ class GAME(object):
 
         return self._one_hot_to_piece[idx]
 
-
-
     def enumerate_positions(self):
         """
         For each piece orientation (designated by ref_idx):
         1. Clear the tmp_board (fill with zeros)
         2. Place the reference piece on the upper left of the tmp board
-        3. Shift the piece down & across to the correct row & col, respectively
-        4. Store the piece position in a flattened dense matrix if the positioned 
-           piece does not land inside of the exclusion zone and also append the one 
-           hot encoded piece name to this flattened.
+        3. Shift the piece down & across to the correct row & col, 
+           respectively
+        4. Store the piece position in a flattened dense matrix if the 
+           positioned piece does not land inside of the exclusion zone and
+           also append the one hot encoded piece name to this flattened. There 
+           are situations where a part of piece may be off of the board but 
+           not inside of the exclusion zone. In these cases, we also check 
+           that the entire piece is still on the board.
 
         Since the number of enumerated states is small, we use a dense matrix.
-        The final dimensions of the dense matrix is (n+1)*(m+1)+n_pieces and, 
-        therefore, includes the exclusion zone and one hot encoded piece name. 
-        A dense matrix makes it easier to manipulate individual matrix elements, 
-        rows, and columns. 
+        The final dimensions of the dense matrix is:
+
+            n * m + 1 exit space + n_pieces
+
+        and, therefore, includes the exclusion zone and one hot encoded piece 
+        name. A dense matrix makes it easier to manipulate individual matrix 
+        elements, rows, and columns. 
 
         Stores dense position matrix in `pieces_pos` attribute
         """
@@ -260,50 +265,41 @@ class GAME(object):
 
         pieces_pos_list = []
 
-        n = 0
+        n_pos = 0
+        n = self.n
+        m = self.m
+
         for k in self.pieces.keys():
             # Add edge case when the piece is NOT on the board
             self._reset_board('tmp_board')
-            flattened_board = self.tmp_board.flatten().tolist()
-            flattened_board.extend(self.piece_to_one_hot(k))
-            pieces_pos_list.append(flattened_board)
-            n += 1
+            flat_board = self.tmp_board[:n, :m].flatten()
+            board_list = flat_board.tolist()
+            board_list.append(self.tmp_board[0, m])
+            board_list.extend(self.piece_to_one_hot(k))
+            pieces_pos_list.append(board_list)
+            n_pos += 1
 
             for ref_idx in self.pieces[k].ref_idx:
                 # Add all other permutations
+                n_ones_on_board = len(ref_idx)
                 for row in range(self.n):
                     for col in range(self.m):
                         self._reset_board('tmp_board')
-                        self.tmp_board = (1, tuple(ref_idx.T)) 
+                        self.tmp_board = (1, tuple(ref_idx.T))
                         shift(self.tmp_board, (row, col), 
                               output=self.tmp_board)
 
-                        if not np.any(self.tmp_board[self.exclusion_idx]):
-                            flattened_board = self.tmp_board.flatten().tolist()
-                            flattened_board.extend(self.piece_to_one_hot(k))
-                            pieces_pos_list.append(flattened_board)
-
-                            n += 1  
+                        if not np.any(self.tmp_board[self.exclusion_idx]) and \
+                           self.tmp_board.sum() == n_ones_on_board:
+                            flat_board = self.tmp_board[:n, :m].flatten()
+                            board_list = flat_board.tolist()
+                            board_list.append(self.tmp_board[0, m])
+                            board_list.extend(self.piece_to_one_hot(k))
+                            pieces_pos_list.append(board_list)
+                            n_pos += 1
 
         self.pieces_pos = np.array(pieces_pos_list, dtype='u1')
 
-    def _piece_fits(self, piece):
-        """
-        Checks if piece can be placed on grid in the 
-        specified position without overlapping with
-        other existing pieces.
-        """
-        
-        # Some logic for finding a clash
-
-        return True
-
-    def add_piece(self, piece):
-        self.piece_fits(piece)
-
-    def del_piece(self, piece):
-        #self
-        pass
-
 if __name__ == '__main__':
     game = GAME()
+    game.enumerate_positions()
