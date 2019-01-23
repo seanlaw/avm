@@ -303,3 +303,4 @@ class GAME(object):
 if __name__ == '__main__':
     game = GAME()
     game.enumerate_positions()
+    print(game.pieces_pos.shape)

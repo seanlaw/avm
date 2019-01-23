@@ -6,9 +6,9 @@ from scipy.sparse import csc_matrix
 from collections import deque
 
 class DLX(object):
-    def __init__(self, A, column_labels=None, primary_idx=None):
+    def __init__(self, A, row_labels=None, primary_idx=None):
         self._A = A
-        self._column_labels = column_labels
+        self._row_labels = row_labels
         self._primary_idx = primary_idx
         self._matrix = None
 
@@ -44,8 +44,8 @@ class DLX(object):
             else:
                 if not print_flag:
                     return 
-                if self._column_labels is not None:
-                    sol = [self._column_labels[row] for row in partials]
+                if self._row_labels is not None:
+                    sol = [self._row_labels[row] for row in partials]
                     print(sol)
                 else:
                     print(list(partials))
