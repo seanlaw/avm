@@ -45,7 +45,10 @@ class DXZ(object):
             sol = list(set(chain(*x)))
             if self._row_labels is not None:
                 sol = [self._row_labels[row] for row in sol]
-            yield sol
+            try:
+                yield sol
+            except StopIteration:
+                return
 
     def _reset_zdd(self):
         n = self.matrix.A.shape[0]
