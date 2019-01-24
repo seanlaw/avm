@@ -4,6 +4,7 @@ import game
 import piece
 from itertools import combinations
 from dlx import DLX
+from dxz import DXZ
 from scipy.sparse import csc_matrix
 
 if __name__ == '__main__':
@@ -15,5 +16,7 @@ if __name__ == '__main__':
     stop = start + len(g.pieces.keys())
     pieces = dict(zip(range(start, stop), g.pieces.keys()))
 
-    dlx = DLX(csc, primary_idx=list(pieces.keys()))
-    dlx.search()
+    #dlx = DLX(csc, primary_idx=list(pieces.keys()))
+    #dlx.search()
+    dxz = DXZ(csc, primary_idx=list(pieces.keys()))
+    dxz.search()

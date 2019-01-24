@@ -74,7 +74,8 @@ class DXZ(object):
                 print("Your matrix is empty!")
             else:
                 sol = list(partials)
-                self.zdd.add(list(zip(sol[:-1], sol[1:])))
+                gs = GraphSet([list(zip(sol[:-1], sol[1:]))])
+                self.zdd.update(gs)
             return
 
         c = self._choose_column()
