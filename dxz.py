@@ -14,7 +14,10 @@ class DXZ(object):
         self._row_labels = row_labels
         self._primary_idx = primary_idx
         self._matrix = None
+        self._universe = None
+        self._gs = None
         self._zdd = None
+        self._Z = None
 
     @property
     def A(self):
@@ -30,11 +33,26 @@ class DXZ(object):
         return self._matrix
 
     @property
+    def universe(self):
+        if self._universe is None:
+            n = self.matrix.A.shape[0]
+            self._universe = list(combinations(range(n), 2))
+
+        return self._universe
+
+    @property
     def zdd(self):
         if self._zdd is None:
-            self._reset_zdd()
+            GraphSet.set_universe(self.universe)            
+            self._zdd = GraphSet()
 
         return self._zdd
+
+    @property
+    def Z(self):
+        if self._Z is None:
+            GraphSet.set_universe(self.universe)            
+            self._Z = GraphSet()
 
     @property
     def solutions(self):
@@ -50,12 +68,6 @@ class DXZ(object):
             except StopIteration:
                 return
 
-    def _reset_zdd(self):
-        n = self.matrix.A.shape[0]
-        universe = list(combinations(range(n), 2))
-        GraphSet.set_universe(universe)
-        self._zdd = GraphSet()
-
     def _choose_column(self):
         S = np.inf
         for j in self.matrix.h.sweep('R'):
@@ -65,9 +77,9 @@ class DXZ(object):
 
         return col
 
-    def _search(self, k=0, partials=None, level=0):
+    def search(self, k=0, partials=None, level=0):
         if level == 0:
-            self._reset_zdd()
+            self.zdd.clear()
 
         if partials is None:
             partials = deque()
@@ -100,7 +112,7 @@ class DXZ(object):
 
         return
 
-    def search(self, k=0, level=0):
+    def _search(self, k=0, level=0):
         if level == 0:
             self._reset_zdd()
 
