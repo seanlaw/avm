@@ -65,7 +65,7 @@ class DXZ(object):
 
         return col
 
-    def search(self, k=0, partials=None, level=0):
+    def _search(self, k=0, partials=None, level=0):
         if level == 0:
             self._reset_zdd()
 
@@ -99,6 +99,43 @@ class DXZ(object):
         self.matrix.uncover(c)
 
         return
+
+    def search(self, k=0, level=0):
+        if level == 0:
+            self._reset_zdd()
+
+        if self.matrix.h.R == self.matrix.h:
+            if len(self.zdd) > 0:
+                self.Z.update(self.zdd)
+            return True
+
+        c = self._choose_column()
+        x = False
+        self.matrix.cover(c)
+        for r in c.sweep('D'):
+            Ok = r
+            #partials.append(r.row)  # r is included in partial solution
+            for j in r.sweep('R'):
+                self.matrix.cover(j.column)
+            y = self.search(k+1, level+1)
+            if y:
+                x = self.unique(r.row, x, y)
+            r = Ok
+            c = r.column
+            for j in r.sweep('L'):
+                self.matrix.uncover(j.column)
+
+        self.matrix.uncover(c)
+
+        return x
+
+    def unique(self, r, x, y):
+        if not y is True:
+            gs = GraphSet([[(r, y)]])
+            self.zdd.update(gs)
+            print(self.zdd, self.Z)
+
+        return r
 
 if __name__ == "__main__":
     # ZDD Example

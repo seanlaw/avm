@@ -20,3 +20,4 @@ if __name__ == '__main__':
     #dlx.search()
     dxz = DXZ(csc, primary_idx=list(pieces.keys()))
     dxz.search()
+    print(len(dxz.zdd))
