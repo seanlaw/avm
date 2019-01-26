@@ -54,6 +54,8 @@ class DXZ(object):
             GraphSet.set_universe(self.universe)            
             self._Z = GraphSet()
 
+        return self._Z
+
     @property
     def solutions(self):
         """
@@ -77,7 +79,7 @@ class DXZ(object):
 
         return col
 
-    def search(self, k=0, partials=None, level=0):
+    def _search(self, k=0, partials=None, level=0):
         if level == 0:
             self.zdd.clear()
 
@@ -112,9 +114,9 @@ class DXZ(object):
 
         return
 
-    def _search(self, k=0, level=0):
+    def search(self, k=0, level=0):
         if level == 0:
-            self._reset_zdd()
+            self.zdd.clear()
 
         if self.matrix.h.R == self.matrix.h:
             if len(self.zdd) > 0:
