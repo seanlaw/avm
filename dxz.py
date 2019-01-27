@@ -3,7 +3,6 @@
 from matrix import MATRIX
 import numpy as np
 from scipy.sparse import csc_matrix
-from collections import deque
 from functools import lru_cache
 from graphillion import GraphSet
 from itertools import combinations, chain
@@ -15,9 +14,7 @@ class DXZ(object):
         self._primary_idx = primary_idx
         self._matrix = None
         self._universe = None
-        self._gs = None
         self._zdd = None
-        self._Z = None
 
     @property
     def A(self):
@@ -37,7 +34,7 @@ class DXZ(object):
         if self._universe is None:
             n = self.matrix.A.shape[0]
             vertices = list(range(n))
-            vertices.append(-1)  # Terminal node
+            vertices.append(-1)  # Terminal zdd Truth node
             self._universe = list(combinations(vertices, 2))
 
         return self._universe
@@ -55,21 +52,13 @@ class DXZ(object):
         self._zdd = value
 
     @property
-    def Z(self):
-        if self._Z is None:
-            GraphSet.set_universe(self.universe)            
-            self._Z = GraphSet()
-
-        return self._Z
-
-    @property
     def solutions(self):
         """
         Returns a generator for each solution stored in the zdd
         """
         for x in iter(self.zdd):
             sol = set(chain(*x))
-            sol.remove(-1)  # Remove terminal zdd node
+            sol.remove(-1)  # Remove terminal zdd Truth node
             sol = list(sol)
             if self._row_labels is not None:
                 sol = [self._row_labels[row] for row in sol]
@@ -103,17 +92,13 @@ class DXZ(object):
             for j in r.sweep('R'):
                 self.matrix.cover(j.column)
             y = self.search(k+1, level+1)
-            #if not y is False:
-            #    x = self.unique(r.row, y)
-            if y is True:
-                x = GraphSet([[(r.row, -1)]])
-            elif isinstance(y, GraphSet):
-                x = GraphSet([[(r.row, -1)]]).join(y)
-                if level == 0:
-                    if len(self.zdd) == 0:
-                        self.zdd.update(x)
-                    else:
-                        self.zdd = self.zdd.union(x)
+            if not y is False:
+                x = self.unique(r, y)
+            if level == 0:
+                if len(self.zdd) == 0:
+                    self.zdd.update(x)
+                else:
+                    self.zdd = self.zdd.union(x)
 
             r = Ok
             c = r.column
@@ -125,7 +110,13 @@ class DXZ(object):
         return x
 
     def unique(self, r, y):
-        return r
+        if y is True:
+            return GraphSet([[(r.row, -1)]])
+        elif isinstance(y, GraphSet):
+            return GraphSet([[(r.row, -1)]]).join(y)
+        else:
+            return
+
 
 if __name__ == "__main__":
     # ZDD Example
@@ -139,6 +130,31 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
     row_labels = list(range(1, csc.shape[0]+1))
     dxz = DXZ(csc, row_labels)
+    dxz.search()
+    for sol in dxz.solutions:
+        print(sol)
+
+    # Generalized Exact Cover Example
+    # 2x2 grid with one L-shaped and two Singleton-shaped pieces.
+    #                0  1  2  3  A  B  C
+    arr = np.array([[1, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0],  # No cover, row 1
+                    [1, 0, 0, 0, 0, 1, 0],
+                    [0, 1, 0, 0, 0, 1, 0],
+                    [0, 0, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 1, 0],  # No cover, row 6
+                    [1, 0, 0, 0, 0, 0, 1],
+                    [0, 1, 0, 0, 0, 0, 1],
+                    [0, 0, 1, 0, 0, 0, 1],
+                    [0, 0, 0, 1, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 1],  # No cover, row 11
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+    
+    pieces = {4: 'A', 5: 'B', 6: 'C'}
+    dxz = DXZ(csc, primary_idx=pieces.keys())
     dxz.search()
     for sol in dxz.solutions:
         print(sol)
