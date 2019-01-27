@@ -36,7 +36,9 @@ class DXZ(object):
     def universe(self):
         if self._universe is None:
             n = self.matrix.A.shape[0]
-            self._universe = list(combinations(range(n), 2))
+            vertices = list(range(n))
+            vertices.append(-1)  # Terminal node
+            self._universe = list(combinations(vertices, 2))
 
         return self._universe
 
@@ -47,6 +49,10 @@ class DXZ(object):
             self._zdd = GraphSet()
 
         return self._zdd
+
+    @zdd.setter
+    def zdd(self, value):
+        self._zdd = value
 
     @property
     def Z(self):
@@ -62,7 +68,9 @@ class DXZ(object):
         Returns a generator for each solution stored in the zdd
         """
         for x in iter(self.zdd):
-            sol = list(set(chain(*x)))
+            sol = set(chain(*x))
+            sol.remove(-1)  # Remove terminal zdd node
+            sol = list(sol)
             if self._row_labels is not None:
                 sol = [self._row_labels[row] for row in sol]
             try:
@@ -79,48 +87,12 @@ class DXZ(object):
 
         return col
 
-    def _search(self, k=0, partials=None, level=0):
-        if level == 0:
-            self.zdd.clear()
-
-        if partials is None:
-            partials = deque()
-
-        if self.matrix.h.R == self.matrix.h:
-            if len(partials) == 0:
-                print("Your matrix is empty!")
-            else:
-                sol = list(partials)
-                gs = GraphSet([list(zip(sol[:-1], sol[1:]))])
-                self.zdd.update(gs)
-            return
-
-        c = self._choose_column()
-        self.matrix.cover(c)
-        for r in c.sweep('D'):
-            Ok = r
-            partials.append(r.row)  # r is included in partial solution
-            for j in r.sweep('R'):
-                self.matrix.cover(j.column)
-            self.search(k+1, partials, level+1)
-            r = Ok
-            c = r.column
-            for j in r.sweep('L'):
-                self.matrix.uncover(j.column)
-
-            if len(partials) > 0:
-                partials.pop()
-        self.matrix.uncover(c)
-
-        return
-
     def search(self, k=0, level=0):
         if level == 0:
             self.zdd.clear()
 
         if self.matrix.h.R == self.matrix.h:
-            if len(self.zdd) > 0:
-                self.Z.update(self.zdd)
+            # Empty matrix
             return True
 
         c = self._choose_column()
@@ -128,12 +100,21 @@ class DXZ(object):
         self.matrix.cover(c)
         for r in c.sweep('D'):
             Ok = r
-            #partials.append(r.row)  # r is included in partial solution
             for j in r.sweep('R'):
                 self.matrix.cover(j.column)
             y = self.search(k+1, level+1)
-            if y:
-                x = self.unique(r.row, x, y)
+            #if not y is False:
+            #    x = self.unique(r.row, y)
+            if y is True:
+                x = GraphSet([[(r.row, -1)]])
+            elif isinstance(y, GraphSet):
+                x = GraphSet([[(r.row, -1)]]).join(y)
+                if level == 0:
+                    if len(self.zdd) == 0:
+                        self.zdd.update(x)
+                    else:
+                        self.zdd = self.zdd.union(x)
+
             r = Ok
             c = r.column
             for j in r.sweep('L'):
@@ -143,12 +124,7 @@ class DXZ(object):
 
         return x
 
-    def unique(self, r, x, y):
-        if not y is True:
-            gs = GraphSet([[(r, y)]])
-            self.zdd.update(gs)
-            print(self.zdd, self.Z)
-
+    def unique(self, r, y):
         return r
 
 if __name__ == "__main__":
