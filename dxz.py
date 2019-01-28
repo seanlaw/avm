@@ -21,6 +21,10 @@ class DXZ(object):
         return self._A
 
     @property
+    def primary_idx(self):
+        return self._primary_idx
+
+    @property
     def matrix(self):
         if self._matrix is None:
             self._matrix = MATRIX(self._A,
@@ -76,31 +80,23 @@ class DXZ(object):
 
         return col
 
-    def search(self, k=0, level=0):
-        if level == 0:
-            self.zdd.clear()
-
+    def _search(self, level=0):
+        """
+        """
         if self.matrix.h.R == self.matrix.h:
             # Empty matrix
             return True
 
         c = self._choose_column()
-        x = False
+        x = GraphSet() 
         self.matrix.cover(c)
         for r in c.sweep('D'):
-            Ok = r
             for j in r.sweep('R'):
                 self.matrix.cover(j.column)
-            y = self.search(k+1, level+1)
+            y = self._search(level+1)
             if not y is False:
-                x = self.unique(r, y)
-            if level == 0:
-                if len(self.zdd) == 0:
-                    self.zdd.update(x)
-                else:
-                    self.zdd = self.zdd.union(x)
+                x = x.union(self._unique(r, y))
 
-            r = Ok
             c = r.column
             for j in r.sweep('L'):
                 self.matrix.uncover(j.column)
@@ -109,16 +105,46 @@ class DXZ(object):
 
         return x
 
-    def unique(self, r, y):
+    def _unique(self, r, y):
         if y is True:
             return GraphSet([[(r.row, -1)]])
         elif isinstance(y, GraphSet):
             return GraphSet([[(r.row, -1)]]).join(y)
         else:
+            # We should never be in here
             return
 
+    def search(self):
+        self.zdd.clear()  # Initializes GraphSet
+        self.zdd = self._search()
+
+    def print_solutions(self):
+        for sol in self.solutions:
+            print(sol)
+        print()
 
 if __name__ == "__main__":
+    # Simple Example
+    arr = np.array([[0, 1, 0],
+                    [0, 0, 1],
+                    [1, 0, 0],
+                    [1, 1, 0],
+                    [0, 1, 1],
+                    [1, 1, 1]
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+    
+    dxz = DXZ(csc)
+    dxz.search()
+    dxz.print_solutions()
+
+    dxz = DXZ(csc, primary_idx=[1,2])
+    dxz.search()
+    dxz.print_solutions()   
+
+    exit()
+
     # ZDD Example
     arr = np.array([[1, 1, 1, 0, 1, 0],
                     [1, 1, 0, 0, 0, 0],
@@ -131,8 +157,7 @@ if __name__ == "__main__":
     row_labels = list(range(1, csc.shape[0]+1))
     dxz = DXZ(csc, row_labels)
     dxz.search()
-    for sol in dxz.solutions:
-        print(sol)
+    dxz.print_solutions()
 
     # Generalized Exact Cover Example
     # 2x2 grid with one L-shaped and two Singleton-shaped pieces.
@@ -156,5 +181,4 @@ if __name__ == "__main__":
     pieces = {4: 'A', 5: 'B', 6: 'C'}
     dxz = DXZ(csc, primary_idx=pieces.keys())
     dxz.search()
-    for sol in dxz.solutions:
-        print(sol)
+    dxz.print_solutions()

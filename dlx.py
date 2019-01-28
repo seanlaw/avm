@@ -71,6 +71,21 @@ class DLX(object):
         return
 
 if __name__ == "__main__":
+    # Simple Example
+    arr = np.array([[0, 1, 0],
+                    [0, 0, 1],
+                    [1, 0, 0],
+                    [1, 1, 0],
+                    [0, 1, 1],
+                    [1, 1, 1]
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+    
+    #dlx = DLX(csc, primary_idx=[1,2])
+    dlx = DLX(csc)
+    dlx.search()
+    
     # Knuth Example
     arr = np.array([[0, 0, 1, 0, 1, 1, 0],
                     [1, 0, 0, 1, 0, 0, 1],
