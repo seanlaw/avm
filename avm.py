@@ -11,13 +11,16 @@ if __name__ == '__main__':
     g = game.GAME()
     g.enumerate_positions()
 
+    for i in g.pieces_pos:
+        print(i)
+
     csc = csc_matrix(g.pieces_pos, dtype='u1')
     start = (g.n * g.m + 1)
     stop = start + len(g.pieces.keys())
     pieces = dict(zip(range(start, stop), g.pieces.keys()))
 
-    #dlx = DLX(csc, primary_idx=list(pieces.keys()))
-    #dlx.search()
-    dxz = DXZ(csc, primary_idx=list(pieces.keys()))
+    #list(pieces.keys())
+
+    dxz = DXZ(csc)
     dxz.search()
-    print(len(dxz.zdd))
+    dxz.print_solutions()
