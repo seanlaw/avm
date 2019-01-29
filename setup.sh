@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/bin/sh
 
 conda install -y fastcache
 conda install -y bitarray
