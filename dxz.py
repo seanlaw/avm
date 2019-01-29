@@ -12,7 +12,6 @@ import logging
 import threading
 import os
 import psutil
-from math import remainder
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +178,7 @@ class DXZ(object):
 
     def _log_resources(self, start_time, every=60.0):
         # Adjust for time drift/creep
-        adjusted_every = every - remainder(time.time()-start_time, every)
+        adjusted_every = every - ((time.time()-start_time) % every)
         threading.Timer(adjusted_every, self._log_resources, [start_time, every]).start()
 
         elapsed_time = self._get_human_readable_time(time.time() - start_time)
