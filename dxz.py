@@ -7,6 +7,10 @@ from fastcache import lru_cache
 from bitarray import bitarray
 from graphillion import GraphSet
 from itertools import combinations, chain
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DXZ(object):
     def __init__(self, A, row_labels=None, primary_idx=None):
@@ -146,9 +150,23 @@ class DXZ(object):
             # We should never be in here
             return
 
-    def search(self):
+    def search(self, log_time=False):
+        start_time = time.time()
+
         self.zdd.clear()  # Initializes GraphSet
         self.zdd = self._search()
+
+        if log_time:
+            msg = (self.get_human_readable_time(time.time() - start_time))
+            logger.warning(msg)
+
+    def get_human_readable_time(self, total_time):
+        hours, rem = divmod(total_time, 3600)
+        minutes, seconds = divmod(rem, 60)
+        hours = int(hours)
+        minutes = int(minutes)
+
+        return f"{hours:0>2}:{minutes:0>2}:{seconds:05.2f}"
 
     def print_solutions(self):
         for sol in self.solutions:
@@ -168,7 +186,7 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
     
     dxz = DXZ(csc)
-    dxz.search()
+    dxz.search(log_time=True)
     dxz.print_solutions()
     exit()
     #dxz = DXZ(csc, primary_idx=[1,2])
