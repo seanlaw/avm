@@ -9,6 +9,9 @@ from graphillion import GraphSet
 from itertools import combinations, chain
 import time
 import logging
+import threading
+import os
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +24,7 @@ class DXZ(object):
         self._universe = None
         self._zdd = None
         self._zero_bitarray = None
+        self._pid = os.getpid()
 
     @property
     def A(self):
@@ -68,6 +72,10 @@ class DXZ(object):
             self._zero_bitarray.setall(0)
 
         return self._zero_bitarray
+
+    @property
+    def pid(self):
+        return self._pid
 
     @property
     def solutions(self):
@@ -150,17 +158,34 @@ class DXZ(object):
             # We should never be in here
             return
 
-    def search(self, log_time=False):
-        start_time = time.time()
+    def search(self, log_time=False, log_resources=False, frequency=60.0):
+        """
+        This is a convenient wrapper function around the `_search` function
+        """
 
+        # Logging time
+        start_time = time.time()
+        if log_resources:
+            self._log_resources(start_time, frequency)
+
+        # The real work is done here
         self.zdd.clear()  # Initializes GraphSet
         self.zdd = self._search()
 
         if log_time:
-            msg = (self.get_human_readable_time(time.time() - start_time))
+            msg = (self._get_human_readable_time(time.time() - start_time))
             logger.warning(msg)
 
-    def get_human_readable_time(self, total_time):
+    def _log_resources(self, start_time, frequency=60.0):
+        elapsed_time = self._get_human_readable_time(time.time() - start_time)
+        process = psutil.Process(self._pid)
+        memory = process.memory_info()[0] / (1024.0 ** 3)
+        percent = process.memory_percent()
+        msg = f"{elapsed_time} {memory} GB {percent} %"
+        logger.warning(msg)
+        threading.Timer(frequency, self._log_resources, [start_time, frequency]).start()
+
+    def _get_human_readable_time(self, total_time):
         hours, rem = divmod(total_time, 3600)
         minutes, seconds = divmod(rem, 60)
         hours = int(hours)
@@ -186,7 +211,7 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
     
     dxz = DXZ(csc)
-    dxz.search(log_time=True)
+    dxz.search(log_time=True, log_resources=True)
     dxz.print_solutions()
     exit()
     #dxz = DXZ(csc, primary_idx=[1,2])
