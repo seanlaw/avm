@@ -3,7 +3,8 @@
 from matrix import MATRIX
 import numpy as np
 from scipy.sparse import csc_matrix
-from functools import lru_cache
+from fastcache import lru_cache
+from bitarray import bitarray
 from graphillion import GraphSet
 from itertools import combinations, chain
 
@@ -15,6 +16,7 @@ class DXZ(object):
         self._matrix = None
         self._universe = None
         self._zdd = None
+        self._zero_bitarray = None
 
     @property
     def A(self):
@@ -56,6 +58,14 @@ class DXZ(object):
         self._zdd = value
 
     @property
+    def zero_bitarray(self):
+        if self._zero_bitarray is None:
+            self._zero_bitarray = bitarray(self._matrix.A.shape[1])
+            self._zero_bitarray.setall(0)
+
+        return self._zero_bitarray
+
+    @property
     def solutions(self):
         """
         Returns a generator for each solution stored in the zdd
@@ -80,12 +90,22 @@ class DXZ(object):
 
         return col
 
-    def _search(self, level=0):
+    def _get_cols_key(self):
         """
+        Returns a bit array of the column indices for `matrix`. 
+        This bitarray can serve as the key for lru_cache lookup.
+
+        The return value is a string containing '0's and '1's
         """
-        if self.matrix.h.R == self.matrix.h:
-            # Empty matrix
-            return True
+
+        bit_array_key = bitarray(self.zero_bitarray)
+        for c in self.matrix.h.sweep('R'):
+            bit_array_key[c.N] = 1
+
+        return bit_array_key.to01()
+
+    @lru_cache(maxsize=None)
+    def memo_cache(self, bit_array_key):
 
         c = self._choose_column()
         x = GraphSet() 
@@ -93,7 +113,7 @@ class DXZ(object):
         for r in c.sweep('D'):
             for j in r.sweep('R'):
                 self.matrix.cover(j.column)
-            y = self._search(level+1)
+            y = self._search()
             if not y is False:
                 x = x.union(self._unique(r, y))
 
@@ -101,6 +121,19 @@ class DXZ(object):
                 self.matrix.uncover(j.column)
 
         self.matrix.uncover(c)
+
+        return x
+
+
+    def _search(self):
+        """
+        """
+        if self.matrix.h.R == self.matrix.h:
+            # Empty matrix
+            return True
+
+        bit_array_key = self._get_cols_key()
+        x = self.memo_cache(bit_array_key)
 
         return x
 
@@ -137,7 +170,7 @@ if __name__ == "__main__":
     dxz = DXZ(csc)
     dxz.search()
     dxz.print_solutions()
-
+    exit()
     #dxz = DXZ(csc, primary_idx=[1,2])
     #dxz.search()
     #dxz.print_solutions()   
