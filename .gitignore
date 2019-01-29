@@ -4,3 +4,4 @@ out
 .ipynb_checkpoints
 PID
 LOG
+nohup*
