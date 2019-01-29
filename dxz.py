@@ -97,7 +97,6 @@ class DXZ(object):
             if not y is False:
                 x = x.union(self._unique(r, y))
 
-            c = r.column
             for j in r.sweep('L'):
                 self.matrix.uncover(j.column)
 
@@ -139,11 +138,9 @@ if __name__ == "__main__":
     dxz.search()
     dxz.print_solutions()
 
-    dxz = DXZ(csc, primary_idx=[1,2])
-    dxz.search()
-    dxz.print_solutions()   
-
-    exit()
+    #dxz = DXZ(csc, primary_idx=[1,2])
+    #dxz.search()
+    #dxz.print_solutions()   
 
     # ZDD Example
     arr = np.array([[1, 1, 1, 0, 1, 0],
@@ -155,6 +152,43 @@ if __name__ == "__main__":
 
     csc = csc_matrix(arr)
     row_labels = list(range(1, csc.shape[0]+1))
+    dxz = DXZ(csc, row_labels)
+    dxz.search()
+    dxz.print_solutions()
+
+    # Knuth Example
+    arr = np.array([[0, 0, 1, 0, 1, 1, 0],
+                    [1, 0, 0, 1, 0, 0, 1],
+                    [0, 1, 1, 0, 0, 1, 0],
+                    [1, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 1, 1, 0, 1]
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+
+    dxz = DXZ(csc)
+    dxz.search()
+    dxz.print_solutions()  
+
+    # Wikipedia Example
+    arr = np.array([[1, 0, 0, 1, 0, 0, 1],
+                    [1, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 0, 1],
+                    [0, 0, 1, 0, 1, 1, 0],
+                    [0, 1, 1, 0, 0, 1, 1],
+                    [0, 1, 0, 0, 0, 0, 1]
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+    row_labels = {0: 'A',
+                  1: 'B',
+                  2: 'C',
+                  3: 'D',
+                  4: 'E',
+                  5: 'F',
+                 }
+
     dxz = DXZ(csc, row_labels)
     dxz.search()
     dxz.print_solutions()
@@ -179,6 +213,42 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
     
     pieces = {4: 'A', 5: 'B', 6: 'C'}
+    dxz = DXZ(csc, primary_idx=pieces.keys())
+    dxz.search()
+    dxz.print_solutions()
+
+    # Generalized Cover Example #2
+    # 3x3 grid with one L-shaped, one (2x2) Square-shaped, and one 
+    # Singleton-shaped piece.
+    # Columns 0-8 (inclusive) represent the board and are secondary.
+    # The L-shaped ('A') piece is primary (i.e., required) while the 
+    # Square-shaped ('B')and Singleton-shaped ('C') pieces are secondary.
+    #                0  1  2  3  4  5  6  7  8  A  B  C
+    arr = np.array([[1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # No cover, row 4                    
+                    [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0],
+                    [0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],  # No cover, row 9                 
+                    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # No cover, row 19                 
+                   ], dtype='u1')
+
+    csc = csc_matrix(arr)
+
+    pieces = {9: 'A', 10: 'B', 11: 'C'}
     dxz = DXZ(csc, primary_idx=pieces.keys())
     dxz.search()
     dxz.print_solutions()
