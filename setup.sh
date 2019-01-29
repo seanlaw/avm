@@ -2,4 +2,5 @@
 
 conda install -y fastcache
 conda install -y bitarray
-pip install graphillion
+conda install -y psutil
+pip install -y graphillion
