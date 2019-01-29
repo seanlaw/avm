@@ -12,6 +12,7 @@ import logging
 import threading
 import os
 import psutil
+from math import remainder
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +159,7 @@ class DXZ(object):
             # We should never be in here
             return
 
-    def search(self, log_time=False, log_resources=False, frequency=60.0):
+    def search(self, log_time=False, log_resources=False, every=60.0):
         """
         This is a convenient wrapper function around the `_search` function
         """
@@ -166,7 +167,7 @@ class DXZ(object):
         # Logging time
         start_time = time.time()
         if log_resources:
-            self._log_resources(start_time, frequency)
+            self._log_resources(start_time, every)
 
         # The real work is done here
         self.zdd.clear()  # Initializes GraphSet
@@ -176,14 +177,18 @@ class DXZ(object):
             msg = (self._get_human_readable_time(time.time() - start_time))
             logger.warning(msg)
 
-    def _log_resources(self, start_time, frequency=60.0):
+    def _log_resources(self, start_time, every=60.0):
+        # Adjust for time drift/creep
+        adjusted_every = every - remainder(time.time()-start_time, every)
+        threading.Timer(adjusted_every, self._log_resources, [start_time, every]).start()
+
         elapsed_time = self._get_human_readable_time(time.time() - start_time)
         process = psutil.Process(self._pid)
         memory = process.memory_info()[0] / (1024.0 ** 3)
         percent = process.memory_percent()
+
         msg = f"{elapsed_time} {memory} GB {percent} %"
         logger.warning(msg)
-        threading.Timer(frequency, self._log_resources, [start_time, frequency]).start()
 
     def _get_human_readable_time(self, total_time):
         hours, rem = divmod(total_time, 3600)
