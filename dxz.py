@@ -68,7 +68,8 @@ class DXZ(object):
     @property
     def zero_bitarray(self):
         if self._zero_bitarray is None:
-            self._zero_bitarray = bitarray(self._matrix.A.shape[1])
+            self._zero_bitarray = bitarray(self._matrix.A.shape[1], 
+                                           endian='little')
             self._zero_bitarray.setall(0)
 
         return self._zero_bitarray
@@ -104,17 +105,18 @@ class DXZ(object):
 
     def _get_cols_key(self):
         """
-        Returns a bit array of the column indices for `matrix`. 
-        This bitarray can serve as the key for lru_cache lookup.
+        Creates a bit array of the column indices for `matrix`. 
+        This bitarray is converted into an integer and can serve 
+        as the key for lru_cache lookup.
 
-        The return value is a string containing '0's and '1's
+        The return value is an integer.
         """
 
-        bit_array_key = bitarray(self.zero_bitarray)
+        bit_array_key = bitarray(self.zero_bitarray, endian='little')
         for c in self.matrix.h.sweep('R'):
             bit_array_key[c.N] = 1
 
-        return bit_array_key.to01()
+        return int.from_bytes(bit_array_key.tobytes(), 'little')
 
     @lru_cache(maxsize=None)
     def memo_cache(self, bit_array_key):
@@ -215,7 +217,7 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
     
     dxz = DXZ(csc)
-    dxz.search(log_time=True, log_resources=True)
+    dxz.search(log_time=True, log_resources=False)
     dxz.print_solutions()
     exit()
     #dxz = DXZ(csc, primary_idx=[1,2])
