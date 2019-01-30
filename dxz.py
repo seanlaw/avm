@@ -25,6 +25,7 @@ class DXZ(object):
         self._zdd = None
         self._zero_bitarray = None
         self._pid = os.getpid()
+        self._search_incomplete = False 
 
     @property
     def A(self):
@@ -77,6 +78,14 @@ class DXZ(object):
     @property
     def pid(self):
         return self._pid
+
+    @property
+    def search_incomplete(self):
+        return self._search_incomplete
+
+    @search_incomplete.setter
+    def search_incomplete(self, value):
+        self._search_incomplete = value
 
     @property
     def solutions(self):
@@ -165,6 +174,8 @@ class DXZ(object):
         This is a convenient wrapper function around the `_search` function
         """
 
+        self.search_incomplete = True
+
         # Logging time
         start_time = time.time()
         if log_resources:
@@ -173,23 +184,25 @@ class DXZ(object):
         # The real work is done here
         self.zdd.clear()  # Initializes GraphSet
         self.zdd = self._search()
+        self.search_incomplete = False
 
         if log_time:
             msg = (self._get_human_readable_time(time.time() - start_time))
             logger.warning(msg)
 
     def _log_resources(self, start_time, every=60.0):
-        # Adjust for time drift/creep
-        adjusted_every = every - ((time.time()-start_time) % every)
-        threading.Timer(adjusted_every, self._log_resources, [start_time, every]).start()
+        if self.search_incomplete:
+            # Adjust for time drift/creep
+            adjusted_every = every - ((time.time()-start_time) % every)
+            threading.Timer(adjusted_every, self._log_resources, [start_time, every]).start()
 
-        elapsed_time = self._get_human_readable_time(time.time() - start_time)
-        process = psutil.Process(self._pid)
-        memory = process.memory_info()[0] / (1024.0 ** 3)
-        percent = process.memory_percent()
+            elapsed_time = self._get_human_readable_time(time.time() - start_time)
+            process = psutil.Process(self._pid)
+            memory = process.memory_info()[0] / (1024.0 ** 3)
+            percent = process.memory_percent()
 
-        msg = f"{elapsed_time} {memory} GB {percent} %"
-        logger.warning(msg)
+            msg = f"{elapsed_time} {memory} GB {percent} %"
+            logger.warning(msg)
 
     def _get_human_readable_time(self, total_time):
         hours, rem = divmod(total_time, 3600)

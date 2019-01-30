@@ -14,7 +14,7 @@ if __name__ == '__main__':
     csc = csc_matrix(g.pieces_pos, dtype='u1')
 
     dxz = DXZ(csc)
-    #dxz.search(log_time=True, log_resources=True, every=60.0)
-    dxz.search(log_time=True, log_resources=False)
+    dxz.search(log_time=True, log_resources=True, every=60.0)
+    #dxz.search(log_time=True, log_resources=False)
     logger.warning(len(dxz))
     #dxz.print_solutions()
