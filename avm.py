@@ -18,4 +18,6 @@ if __name__ == '__main__':
     #dxz.search(log_time=True, log_resources=True, every=60.0)
     dxz.search(log_time=True, log_resources=False)
     logger.warning(len(dxz.zdd))
+    #for sol in dxz.solutions:
+    #    print(g.pieces_pos[sol, :])
     #dxz.print_solutions()
