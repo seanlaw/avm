@@ -281,6 +281,7 @@ class GAME(object):
             board_list.extend(self.piece_to_one_hot(k))
             pieces_pos_list.append(board_list)
             n_pos += 1
+            piece_n_pos = 1
 
             for ref_idx in self.pieces[k].ref_idx:
                 # Add all other permutations
@@ -300,6 +301,7 @@ class GAME(object):
                             board_list.extend(self.piece_to_one_hot(k))
                             pieces_pos_list.append(board_list)
                             n_pos += 1
+                            piece_n_pos += 1
 
         self.pieces_pos = np.array(pieces_pos_list, dtype='u1')
 

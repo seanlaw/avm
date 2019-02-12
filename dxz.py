@@ -12,6 +12,7 @@ import logging
 import threading
 import os
 import psutil
+import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class DXZ(object):
     @property
     def zdd(self):
         if self._zdd is None:
-            GraphSet.set_universe(self.universe)            
+            GraphSet.set_universe(self.universe)
             self._zdd = GraphSet()
 
         return self._zdd
@@ -216,6 +217,29 @@ class DXZ(object):
         for sol in self.solutions:
             print(sol)
         print()
+
+    def dump(self, fzdd='zdd.dxz', funiverse='universe.dxz'):
+        with open(fzdd, 'wb') as fp:
+            self.zdd.dump(fp)
+
+        with open(funiverse, 'wb') as fp:
+            pickle.dump(GraphSet.universe(), fp)
+        
+
+    def save(self, fzdd='zdd.dxz', funiverse='universe.dxz'):
+        """
+        Convenience function that calls `dump` function internally
+        """
+        self.dump(fzdd, funiverse)
+
+    def load(self, fzdd='zdd.dxz', funiverse='universe.dxz'):
+        """
+        """
+        with open(funiverse, 'rb') as fp:
+            GraphSet.set_universe(pickle.load(fp), traversal='as-is')
+
+        with open(fzdd, 'rb') as fp:
+            self.zdd = GraphSet.load(fp)
 
 if __name__ == "__main__":
     # Simple Example
