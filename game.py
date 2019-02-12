@@ -301,18 +301,6 @@ class GAME(object):
                             pieces_pos_list.append(board_list)
                             n_pos += 1
 
-        # Add rows where only one secondary column (i.e., space
-        # on the board including the exit space) is filled and 
-        # none of the primary columns (pieces) are filled
-        for i in range(n*m+1):
-            self._reset_board('tmp_board')
-            flat_board = self.tmp_board[:n, :m].flatten()
-            board_list = flat_board.tolist()
-            board_list.append(self.tmp_board[0, m])
-            board_list.extend(self.piece_to_one_hot(None))
-            board_list[i] = 1
-            pieces_pos_list.append(board_list)
-
         self.pieces_pos = np.array(pieces_pos_list, dtype='u1')
 
 if __name__ == '__main__':
