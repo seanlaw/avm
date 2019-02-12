@@ -17,5 +17,5 @@ if __name__ == '__main__':
     dxz = DXZ(csc, primary_idx=primary_idx)
     #dxz.search(log_time=True, log_resources=True, every=60.0)
     dxz.search(log_time=True, log_resources=False)
-    logger.warning(len(dxz))
+    logger.warning(len(dxz.zdd))
     #dxz.print_solutions()
