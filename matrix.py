@@ -1,5 +1,7 @@
+#!/usr/bin/env python
 from node import ROOT, DATA, COLUMN
 import numpy as np
+from scipy.sparse import csc_matrix
 
 class MATRIX(object):
     def __init__(self, A, primary_idx=None):
@@ -106,4 +108,45 @@ class MATRIX(object):
 
 
 if __name__ == '__main__':
-    pass
+
+    def choose_column(m):
+        S = np.inf
+        for j in m.h.sweep('R'):
+            if j.S < S:
+                col = j
+                S = j.S
+        return col
+
+    # ZDD Example
+    arr = np.array([[1, 1, 1, 0, 1, 0],
+                    [1, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 1],
+                    [0, 0, 1, 1, 0, 1],
+                    [0, 0, 1, 0, 1, 0]], dtype='u1')
+
+    csc = csc_matrix(arr)
+    m = MATRIX(csc)
+    for c in m.h.sweep('R'):
+        for r in c.sweep('D'):
+            print(f"{r.row}, {c.N}")
+
+    # col = choose_column(m)
+    # m.cover(col)
+    # print(col.N)
+    # for c in m.h.sweep('R'):
+    #     for r in c.sweep('D'):
+    #         print(f"{r.row}, {c.N}")
+
+    # col = choose_column(m)
+    # m.cover(col)
+    # print(col.N)
+    # for c in m.h.sweep('R'):
+    #     for r in c.sweep('D'):
+    #         print(f"{r.row}, {c.N}")
+
+    # col = choose_column(m)
+    # m.cover(col)
+    # print(col.N)
+    # for c in m.h.sweep('R'):
+    #     for r in c.sweep('D'):
+    #         print(f"{r.row}, {c.N}")

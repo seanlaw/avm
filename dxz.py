@@ -70,8 +70,9 @@ class DXZ(object):
     @property
     def zero_bitarray(self):
         if self._zero_bitarray is None:
-            self._zero_bitarray = bitarray(self._matrix.A.shape[1], 
-                                           endian='little')
+            n = self._matrix.A.shape[0]
+            m = self._matrix.A.shape[1]
+            self._zero_bitarray = bitarray(n*m, endian='little')
             self._zero_bitarray.setall(0)
 
         return self._zero_bitarray
@@ -113,9 +114,9 @@ class DXZ(object):
 
         return col
 
-    def _get_cols_key(self):
+    def _get_matrix_key(self):
         """
-        Creates a bit array of the column indices for `matrix`. 
+        Creates a bit array of the matrix indices for `matrix`. 
         This bitarray is converted into an integer and can serve 
         as the key for lru_cache lookup.
 
@@ -123,14 +124,15 @@ class DXZ(object):
         """
 
         bit_array_key = bitarray(self.zero_bitarray, endian='little')
+
         for c in self.matrix.h.sweep('R'):
-            bit_array_key[c.N] = 1
+            for r in c.sweep('D'):
+                bit_array_key[self.A.shape[1] * r.row + c.N] = 1
 
         return int.from_bytes(bit_array_key.tobytes(), 'little')
 
     @lru_cache(maxsize=None)
     def memo_cache(self, bit_array_key):
-
         c = self._choose_column()
         x = GraphSet() 
         self.matrix.cover(c)
@@ -148,15 +150,14 @@ class DXZ(object):
 
         return x
 
-
-    def _search(self):
+    def _search(self, col_bit_array_key=None):
         """
         """
         if self.matrix.h.R == self.matrix.h:
             # Empty matrix
             return True
 
-        bit_array_key = self._get_cols_key()
+        bit_array_key = self._get_matrix_key()
         x = self.memo_cache(bit_array_key)
 
         return x
@@ -242,6 +243,21 @@ class DXZ(object):
             self.zdd = GraphSet.load(fp)
 
 if __name__ == "__main__":
+    arr = np.array([[0, 0, 0, 1, 0],
+                    [1, 1, 0, 1, 0],
+                    [0, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1],
+                    [1, 0, 0, 0, 1],
+                    [0, 1, 0, 0, 1],
+                    [0, 0, 1, 0, 1]], dtype='u1')
+
+    csc = csc_matrix(arr)
+
+    dxz = DXZ(csc, primary_idx=[3,4])
+    dxz.search(log_time=True, log_resources=False)
+    dxz.print_solutions()
+    #exit()
+
     # Simple Example
     arr = np.array([[0, 1, 0],
                     [0, 0, 1],
@@ -256,7 +272,7 @@ if __name__ == "__main__":
     dxz = DXZ(csc)
     dxz.search(log_time=True, log_resources=False)
     dxz.print_solutions()
-    exit()
+    #exit()
     #dxz = DXZ(csc, primary_idx=[1,2])
     #dxz.search()
     #dxz.print_solutions()   
