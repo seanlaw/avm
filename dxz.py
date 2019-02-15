@@ -183,6 +183,7 @@ class DXZ(object):
             msg = (self._get_human_readable_time(time.time() - start_time))
             logger.warning(msg)
             logger.warning(self._search.cache_info())
+            logger.warning(len(self.zdd))
 
     def _log_resources(self, start_time, every=60.0):
         if self.search_incomplete:
@@ -195,7 +196,7 @@ class DXZ(object):
             memory = process.memory_info()[0] / (1024.0 ** 3)
             percent = process.memory_percent()
 
-            msg = f"{elapsed_time} {memory} GB {percent} % {self._search.cache_info()}"
+            msg = f"{elapsed_time} {memory} GB {percent} % {self._search.cache_info()} {len(self.zdd)}"
             logger.warning(msg)
 
     def _get_human_readable_time(self, total_time):
