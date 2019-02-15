@@ -113,52 +113,41 @@ class DXZ(object):
                 S = j.S
 
         return col
-
-    def _get_matrix_key(self):
-        """
-        Creates a bit array of the matrix indices for `matrix`. 
-        This bitarray is converted into an integer and can serve 
-        as the key for lru_cache lookup.
-
-        The return value is an integer.
-        """
-
-        bit_array_key = bitarray(self.zero_bitarray, endian='little')
-
-        for c in self.matrix.h.sweep('R'):
-            for r in c.sweep('D'):
-                bit_array_key[self.A.shape[1] * r.row + c.N] = 1
-
-        return int.from_bytes(bit_array_key.tobytes(), 'little')
-
-    @lru_cache(maxsize=None)
-    def memo_cache(self, bit_array_key):
+    
+    def memo_cache(self):
         c = self._choose_column()
+        bit_array_key = bitarray(self.zero_bitarray, endian='little')
         x = GraphSet() 
         self.matrix.cover(c)
         for r in c.sweep('D'):
+            bit_array_key[r.row*self.A.shape[1] + c.N] = 1
+
+        for r in c.sweep('D'):
             for j in r.sweep('R'):
                 self.matrix.cover(j.column)
-            y = self._search()
+                bit_array_key[r.row * self.A.shape[1] + j.column.N] = 1
+            int_key = int.from_bytes(bit_array_key.tobytes(), 'little')
+            y = self._search(int_key)
             if not y is False:
                 x = x.union(self._unique(r, y))
 
             for j in r.sweep('L'):
                 self.matrix.uncover(j.column)
+                bit_array_key[r.row * self.A.shape[1] + j.column.N] = 0
 
         self.matrix.uncover(c)
 
         return x
 
-    def _search(self, col_bit_array_key=None):
+    #@lru_cache(maxsize=None)
+    def _search(self, int_key):
         """
         """
         if self.matrix.h.R == self.matrix.h:
             # Empty matrix
             return True
 
-        bit_array_key = self._get_matrix_key()
-        x = self.memo_cache(bit_array_key)
+        x = self.memo_cache()
 
         return x
 
@@ -185,7 +174,10 @@ class DXZ(object):
 
         # The real work is done here
         self.zdd.clear()  # Initializes GraphSet
-        self.zdd = self._search()
+        bit_array_key = bitarray(self.zero_bitarray, endian='little')
+        bit_array_key.setall(1)
+        int_key = int.from_bytes(bit_array_key.tobytes(), 'little')
+        self.zdd = self._search(int_key)
         self.search_incomplete = False
 
         if log_time:
@@ -384,6 +376,6 @@ if __name__ == "__main__":
     csc = csc_matrix(arr)
 
     pieces = {9: 'A', 10: 'B', 11: 'C'}
-    dxz = DXZ(csc, primary_idx=pieces.keys())
+    dxz = DXZ(csc)#, primary_idx=pieces.keys())
     dxz.search()
     dxz.print_solutions()
